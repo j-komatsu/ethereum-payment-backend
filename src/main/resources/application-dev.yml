@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/paymentdb-dev
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+web3j:
+  client-address: ${WEB3J_CLIENT_ADDRESS:https://sepolia.infura.io/v3/YOUR_PROJECT_ID}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.example.payment: DEBUG
+    org.web3j: INFO

@@ -3,40 +3,40 @@ spring:
     name: ethereum-payment-backend
 
   datasource:
-    url: ${DB_URL:jdbc:h2:mem:paymentdb}
+    url: ${DB_URL:jdbc:h2:file:./data/paymentdb}
     username: ${DB_USERNAME:sa}
     password: ${DB_PASSWORD:}
     driver-class-name: ${DB_DRIVER:org.h2.Driver}
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
 
-  h2:
-    console:
+  threads:
+    virtual:
       enabled: true
-      path: /h2-console
 
 web3j:
-  client-address: ${WEB3J_CLIENT_ADDRESS:https://mainnet.infura.io/v3/YOUR_PROJECT_ID}
+  client-address: ${WEB3J_CLIENT_ADDRESS}
 
 payment:
-  default-ttl-seconds: 3600
+  default-ttl-seconds: ${PAYMENT_DEFAULT_TTL_SECONDS:3600}
+  max-ttl-seconds: ${PAYMENT_MAX_TTL_SECONDS:86400}
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info
   endpoint:
     health:
-      show-details: always
+      show-details: when-authorized
 
 logging:
   level:
-    com.example.payment: DEBUG
-    org.web3j: INFO
+    com.example.payment: INFO
+    org.web3j: WARN

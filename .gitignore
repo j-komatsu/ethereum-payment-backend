@@ -1,8 +1,10 @@
+### ビルド成果物 ###
 target/
 *.class
 *.jar
 *.war
 
+### IDE ###
 .idea/
 *.iml
 .vscode/
@@ -10,9 +12,22 @@ target/
 .project
 .classpath
 
-*.env
+### セキュリティ：絶対にコミットしない ###
+.env
 .env.*
 !.env.example
-
+*.pem
+*.key
+*.p12
+*.jks
+keystore.*
 application-local.yml
 application-secret.yml
+application-prod.yml
+
+### ローカルデータ ###
+data/
+
+### OS ###
+.DS_Store
+Thumbs.db
