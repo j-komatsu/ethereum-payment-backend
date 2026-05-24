@@ -99,10 +99,8 @@ GET /api/v1/payments?status=PENDING
 | USDT | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 |
 | DAI  | `0x6B175474E89094C44Da98b954EedeAC495271d0F` | 18 |
 
-## 今後の実装予定
+## 開発計画
 
-- [ ] ERC-20 Transfer イベント監視 (Web3j イベントサブスクリプション)
-- [ ] 入金確認後のステータス自動更新
-- [ ] Webhook 通知
-- [ ] Testnet (Sepolia) サポート
-- [ ] PostgreSQL 切り替え設定
+詳細な実装計画・学習レポートの構成は [`docs/PLAN.md`](docs/PLAN.md) を参照。
+
+7フェーズ・35日分の具体的なタスクとレポートテーマを記載しています。
