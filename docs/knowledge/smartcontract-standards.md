@@ -74,7 +74,8 @@ EIP-712 では署名対象が「どのアプリの・どのコントラクトの
 ### 構造
 
 ```
-署名対象 = hash(domain_separator || hash(typed_data))
+署名対象 = hash(0x1901 || domain_separator || hash(typed_data))
+              ↑ EIP-712 固定プレフィックス（Web3j で手動実装する際は必須）
 
 domain_separator:
   - name: "MyApp"
@@ -123,7 +124,7 @@ permit(
 ### JPYC との関係
 
 **JPYC（JPYCv2）は EIP-2612 対応済み**。
-コントラクトアドレス: `0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB`
+コントラクトアドレス: `0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB`（**Polygon mainnet**）
 → Phase 5 で即座に利用可能。
 
 ### リプレイ攻撃防止
@@ -131,8 +132,13 @@ permit(
 | パラメーター | 役割 |
 |---|---|
 | `nonce` | コントラクトが管理するカウンター。使用済み署名の再利用を防止 |
-| `deadline` | 期限切れ署名の悪用を防止 |
+| `deadline` | 期限切れ署名の悪用を防止。推奨: 現在時刻 + 20〜30分（短すぎると遅延で失効、長すぎると盗用リスク）|
 | `chainId` (domain) | 他チェーンでの署名流用を防止 |
+
+### 署名検証の注意点
+
+`ecrecover`（`permit` 内部で使用）が `address(0)` を返した場合は**無効な署名**として必ず拒否すること。
+Web3j での検証時も同様に address(0) チェックを実装する。
 
 ---
 
@@ -188,7 +194,7 @@ Ethereum Pectra アップグレード（2025年）で導入。
 ### HashPort Wallet との関係
 
 **HashPort は EIP-7702 を実装済み**（日本で先進的なウォレット）。
-1M+ ユーザー・ゼロハック実績（2025年時点）。
+※ ユーザー数・セキュリティ実績は HashPort 公式情報に基づく。最新情報は公式サイトを確認すること。
 
 → HashPort ユーザーは EIP-7702 の恩恵を受けながら JPYC 決済が可能。
 
@@ -225,8 +231,9 @@ UserOperation（ユーザーの意図）
 
 ### Phase 5-6 での活用
 
-EIP-4337 の完全実装は複雑だが、**HashPort の EIP-7702 実装と組み合わせることで**
-ユーザー体験をガスレスに近づけることが可能。
+EIP-4337 の完全実装（Bundler 運用等）は Phase 7 以降に延期。
+Phase 5-6 では HashPort の **EIP-7702 実装**によりガスレスに近いユーザー体験を実現する
+（EIP-7702 と EIP-4337 は設計思想が異なり、HashPort は EIP-4337 Bundler とは独立して動作する）。
 
 ---
 
@@ -301,6 +308,8 @@ OpenZeppelin の実装をベースにしていると推定される。
 ---
 
 ## 9. JPYC 対応規格マトリクス
+
+> JPYC コントラクトアドレス: `0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB`（**Polygon mainnet**、decimals=18）
 
 | 規格 | 対応状況 | 活用フェーズ |
 |---|---|---|
