@@ -2,8 +2,10 @@ package com.example.payment.controller;
 
 import com.example.payment.model.StablecoinType;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -12,6 +14,7 @@ import java.math.BigDecimal;
 public class CreatePaymentRequest {
 
     @NotBlank
+    @Pattern(regexp = "^0x[0-9a-fA-F]{40}$", message = "有効なEthereumアドレス形式（0x + 40文字の16進数）を入力してください")
     private String receiverAddress;
 
     @NotNull
@@ -21,5 +24,6 @@ public class CreatePaymentRequest {
     @NotNull
     private StablecoinType token;
 
+    @Max(86400)
     private Long ttlSeconds;
 }
