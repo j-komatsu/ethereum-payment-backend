@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: ethereum-payment-backend
+
+  datasource:
+    url: ${DB_URL:jdbc:h2:mem:paymentdb}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+web3j:
+  client-address: ${WEB3J_CLIENT_ADDRESS:https://mainnet.infura.io/v3/YOUR_PROJECT_ID}
+
+payment:
+  default-ttl-seconds: 3600
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.example.payment: DEBUG
+    org.web3j: INFO
