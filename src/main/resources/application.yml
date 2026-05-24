@@ -3,10 +3,10 @@ spring:
     name: ethereum-payment-backend
 
   datasource:
-    url: ${DB_URL:jdbc:h2:file:./data/paymentdb}
-    username: ${DB_USERNAME:sa}
-    password: ${DB_PASSWORD:}
-    driver-class-name: ${DB_DRIVER:org.h2.Driver}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
 
   jpa:
     hibernate:
@@ -34,9 +34,10 @@ management:
         include: health,info
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: never
 
 logging:
   level:
     com.example.payment: INFO
     org.web3j: WARN
+    okhttp3: ERROR

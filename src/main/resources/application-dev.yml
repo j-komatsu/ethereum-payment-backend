@@ -19,7 +19,7 @@ spring:
       path: /h2-console
 
 web3j:
-  client-address: ${WEB3J_CLIENT_ADDRESS:https://sepolia.infura.io/v3/YOUR_PROJECT_ID}
+  client-address: ${WEB3J_CLIENT_ADDRESS}
 
 management:
   endpoints:
@@ -34,3 +34,4 @@ logging:
   level:
     com.example.payment: DEBUG
     org.web3j: INFO
+    okhttp3: INFO
