@@ -21,12 +21,12 @@ public class PaymentService {
 
     @Transactional
     public PaymentOrder createOrder(CreatePaymentRequest request) {
-        long ttl = request.getTtlSeconds() != null ? request.getTtlSeconds() : defaultTtlSeconds;
+        long ttl = request.ttlSeconds() != null ? request.ttlSeconds() : defaultTtlSeconds;
 
         PaymentOrder order = PaymentOrder.builder()
-                .receiverAddress(request.getReceiverAddress())
-                .expectedAmount(request.getAmount())
-                .token(request.getToken())
+                .receiverAddress(request.receiverAddress())
+                .expectedAmount(request.amount())
+                .token(request.token())
                 .status(PaymentStatus.PENDING)
                 .expiresAt(Instant.now().plusSeconds(ttl))
                 .build();

@@ -37,6 +37,9 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("com.h2database:h2")
 
+    // OpenAPI / Swagger UI
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
+
     // Utilities
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
