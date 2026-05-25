@@ -1,19 +1,20 @@
 # ethereum-payment-backend
 
-Java + Spring Boot + Web3j によるステーブルコイン決済バックエンド。
+Java + Spring Boot + Web3j による JPYC（日本円ステーブルコイン）決済バックエンド。
 
-USDC / USDT / DAI の受取確認・注文管理 REST API を提供します。
+JPYC / USDC / USDT / DAI の受取確認・注文管理 REST API を提供します。
+HashPort Wallet との連携を前提とした日本円決済システムです。
 
 ## 技術スタック
 
 | 層 | 技術 |
 |---|---|
-| Runtime | Java 21 |
+| Runtime | Java 21（仮想スレッド有効）|
 | Framework | Spring Boot 3.2 |
 | Ethereum | Web3j 4.10 |
-| DB (dev) | H2 (in-memory) |
+| DB (dev) | H2 ファイルモード（`data/paymentdb-dev`）|
 | DB (prod) | PostgreSQL |
-| Build | Maven |
+| Build | Gradle Kotlin DSL |
 
 ## パッケージ構成
 
@@ -21,16 +22,16 @@ USDC / USDT / DAI の受取確認・注文管理 REST API を提供します。
 src/main/java/com/example/payment/
 ├── EthereumPaymentApplication.java   # エントリポイント
 ├── config/
-│   └── Web3jConfig.java              # Web3j Bean 定義
+│   └── Web3jConfig.java              # Web3j Bean 定義（Infura URL ロギング防止）
 ├── controller/
 │   ├── PaymentController.java        # REST エンドポイント
-│   └── CreatePaymentRequest.java     # リクエスト DTO
+│   └── CreatePaymentRequest.java     # リクエスト DTO（アドレス形式バリデーション）
 ├── service/
 │   └── PaymentService.java           # ビジネスロジック
 ├── model/
 │   ├── PaymentOrder.java             # JPA エンティティ
 │   ├── PaymentStatus.java            # ステータス列挙
-│   └── StablecoinType.java           # トークン列挙 (コントラクトアドレス付き)
+│   └── StablecoinType.java           # トークン列挙（JPYC 優先・コントラクトアドレス付き）
 ├── repository/
 │   └── PaymentOrderRepository.java   # Spring Data JPA
 └── exception/
@@ -38,14 +39,36 @@ src/main/java/com/example/payment/
     └── GlobalExceptionHandler.java   # RFC 9457 ProblemDetail
 ```
 
-## ローカル起動
+## ローカル起動手順
+
+### 1. 環境変数の設定
 
 ```bash
-# 依存関係のダウンロード & ビルド
-mvn clean package -DskipTests
+cp .env.example .env
+# .env を編集して WEB3J_CLIENT_ADDRESS に Infura/Alchemy の URL を設定
+```
 
-# 起動 (H2 in-memory DB 使用)
-mvn spring-boot:run
+### 2. Infura アカウント取得（初回のみ）
+
+1. [https://infura.io](https://infura.io) にアクセス
+2. 無料アカウント作成
+3. 新規プロジェクト作成 → API Key 取得
+4. `.env` に設定: `WEB3J_CLIENT_ADDRESS=https://sepolia.infura.io/v3/YOUR_KEY`
+
+### 3. 接続確認
+
+```bash
+source .env
+./scripts/check-connection.sh
+# ✅ 最新ブロック番号: 12345678 (0xbc614e)
+# ✅ ネットワーク: Sepolia Testnet
+```
+
+### 4. アプリ起動
+
+```bash
+# 開発モード（H2 ファイルモード・デバッグログ）
+./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
 起動後:
@@ -55,13 +78,15 @@ mvn spring-boot:run
 
 ## 環境変数
 
-| 変数 | デフォルト | 説明 |
-|---|---|---|
-| `WEB3J_CLIENT_ADDRESS` | `https://mainnet.infura.io/v3/YOUR_PROJECT_ID` | JSON-RPC エンドポイント |
-| `DB_URL` | H2 in-memory | JDBC URL |
-| `DB_USERNAME` | `sa` | DB ユーザー名 |
-| `DB_PASSWORD` | (空) | DB パスワード |
-| `DB_DRIVER` | `org.h2.Driver` | JDBC ドライバクラス |
+`.env.example` をコピーして `.env` を作成してください（`.env` は Git にコミットしない）。
+
+| 変数 | 説明 |
+|---|---|
+| `WEB3J_CLIENT_ADDRESS` | JSON-RPC エンドポイント（Infura/Alchemy URL）|
+| `DB_URL` | JDBC URL（本番: PostgreSQL 必須）|
+| `DB_USERNAME` | DB ユーザー名 |
+| `DB_PASSWORD` | DB パスワード |
+| `DB_DRIVER` | JDBC ドライバクラス |
 
 ## API 概要
 
@@ -74,7 +99,7 @@ Content-Type: application/json
 {
   "receiverAddress": "0xYourAddress",
   "amount": "100.00",
-  "token": "USDC",
+  "token": "JPYC",
   "ttlSeconds": 3600
 }
 ```
@@ -91,13 +116,20 @@ GET /api/v1/payments/{id}
 GET /api/v1/payments?status=PENDING
 ```
 
-## 対応ステーブルコイン (Mainnet)
+## 対応トークン（Polygon Mainnet）
 
-| Token | Contract Address | Decimals |
-|---|---|---|
-| USDC | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | 6 |
-| USDT | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 |
-| DAI  | `0x6B175474E89094C44Da98b954EedeAC495271d0F` | 18 |
+| Token | Contract Address | Decimals | 備考 |
+|---|---|---|---|
+| **JPYC** | `0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB` | 18 | 優先・EIP-2612対応 |
+| USDC | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | 6 | Ethereum Mainnet |
+| USDT | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 | Ethereum Mainnet |
+| DAI  | `0x6B175474E89094C44Da98b954EedeAC495271d0F` | 18 | Ethereum Mainnet |
+
+## セキュリティ
+
+- 秘密鍵・API キー・パスワードは絶対にリポジトリにコミットしない
+- PR 作成前に必ず `./scripts/security-check.sh` を実行
+- 本番設定（`application.yml`）に H2 コンソールや DEBUG ログを含めない
 
 ## 開発計画
 
