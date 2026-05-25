@@ -116,14 +116,16 @@ GET /api/v1/payments/{id}
 GET /api/v1/payments?status=PENDING
 ```
 
-## 対応トークン（Polygon Mainnet）
+## 対応トークン
 
-| Token | Contract Address | Decimals | 備考 |
-|---|---|---|---|
-| **JPYC** | `0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB` | 18 | 優先・EIP-2612対応（**Polygon Mainnet**）|
-| USDC | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | 6 | Ethereum Mainnet |
-| USDT | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 | Ethereum Mainnet |
-| DAI  | `0x6B175474E89094C44Da98b954EedeAC495271d0F` | 18 | Ethereum Mainnet |
+> ⚠️ チェーンに注意: JPYC は **Polygon** で動作します。USDC/USDT/DAI は Ethereum Mainnet のアドレスです。
+
+| Token | Contract Address | Chain | Decimals | 備考 |
+|---|---|---|---|---|
+| **JPYC** | `0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB` | Polygon Mainnet | 18 | 優先・EIP-2612対応 |
+| USDC | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | Ethereum Mainnet | 6 | — |
+| USDT | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | Ethereum Mainnet | 6 | — |
+| DAI  | `0x6B175474E89094C44Da98b954EedeAC495271d0F` | Ethereum Mainnet | 18 | — |
 
 ## セキュリティ
 

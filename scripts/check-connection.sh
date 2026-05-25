@@ -32,8 +32,9 @@ if [ -z "${HEX_BLOCK}" ]; then
   exit 1
 fi
 
-# 16進数 → 10進数に変換
-DEC_BLOCK=$((${HEX_BLOCK}))
+# 16進数 → 10進数に変換（0xプレフィックスを除去してから変換: 明示的で bash バージョン依存しない）
+HEX_BLOCK_CLEAN="${HEX_BLOCK#0x}"
+DEC_BLOCK=$((16#${HEX_BLOCK_CLEAN}))
 echo "✅ 最新ブロック番号: ${DEC_BLOCK} (${HEX_BLOCK})"
 
 # eth_chainId: チェーンIDを確認
@@ -43,15 +44,26 @@ CHAIN_RESPONSE=$(curl -s -X POST "${WEB3J_CLIENT_ADDRESS}" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":2}')
 
+if echo "${CHAIN_RESPONSE}" | grep -q '"error"'; then
+  echo "❌ chainId 取得エラー: ${CHAIN_RESPONSE}"
+  exit 1
+fi
+
 HEX_CHAIN=$(echo "${CHAIN_RESPONSE}" | grep -o '"result":"[^"]*"' | sed 's/"result":"//;s/"//')
-DEC_CHAIN=$((${HEX_CHAIN}))
+if [ -z "${HEX_CHAIN}" ]; then
+  echo "⚠️ chainId を取得できませんでした: ${CHAIN_RESPONSE}"
+  exit 1
+fi
+
+HEX_CHAIN_CLEAN="${HEX_CHAIN#0x}"
+DEC_CHAIN=$((16#${HEX_CHAIN_CLEAN}))
 
 case ${DEC_CHAIN} in
-  1)   NETWORK="Ethereum Mainnet" ;;
+  1)        NETWORK="Ethereum Mainnet" ;;
   11155111) NETWORK="Sepolia Testnet" ;;
-  137) NETWORK="Polygon Mainnet" ;;
-  80002) NETWORK="Polygon Amoy Testnet" ;;
-  *)   NETWORK="Unknown (chainId=${DEC_CHAIN})" ;;
+  137)      NETWORK="Polygon Mainnet" ;;
+  80002)    NETWORK="Polygon Amoy Testnet" ;;
+  *)        NETWORK="Unknown (chainId=${DEC_CHAIN})" ;;
 esac
 
 echo "✅ ネットワーク: ${NETWORK}"
