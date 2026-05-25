@@ -1,4 +1,4 @@
-package com.example.payment.model;
+package com.web3pay.payment;
 
 public enum PaymentStatus {
     PENDING,

@@ -1,4 +1,4 @@
-package com.example.payment;
+package com.web3pay;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -6,7 +6,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class EthereumPaymentApplicationTests {
+class Web3PayApplicationTests {
 
     @Test
     void contextLoads() {

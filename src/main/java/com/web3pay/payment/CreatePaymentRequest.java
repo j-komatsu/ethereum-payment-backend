@@ -1,6 +1,6 @@
-package com.example.payment.controller;
+package com.web3pay.payment;
 
-import com.example.payment.model.StablecoinType;
+import com.web3pay.token.StablecoinType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;

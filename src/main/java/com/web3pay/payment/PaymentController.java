@@ -1,7 +1,5 @@
-package com.example.payment.controller;
+package com.web3pay.payment;
 
-import com.example.payment.model.PaymentOrder;
-import com.example.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
