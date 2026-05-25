@@ -38,6 +38,6 @@ management:
 
 logging:
   level:
-    com.example.payment: INFO
+    com.web3pay: INFO
     org.web3j: WARN
     okhttp3: ERROR

@@ -1,5 +1,6 @@
-package com.example.payment.exception;
+package com.web3pay.exception;
 
+import com.web3pay.payment.PaymentOrderNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;

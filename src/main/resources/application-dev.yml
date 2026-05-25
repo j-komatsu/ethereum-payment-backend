@@ -32,6 +32,6 @@ management:
 
 logging:
   level:
-    com.example.payment: DEBUG
+    com.web3pay: DEBUG
     org.web3j: INFO
     okhttp3: INFO
