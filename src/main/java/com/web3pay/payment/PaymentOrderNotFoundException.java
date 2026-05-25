@@ -1,4 +1,4 @@
-package com.example.payment.exception;
+package com.web3pay.payment;
 
 public class PaymentOrderNotFoundException extends RuntimeException {
 

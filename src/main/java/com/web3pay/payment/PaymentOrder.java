@@ -1,5 +1,6 @@
-package com.example.payment.model;
+package com.web3pay.payment;
 
+import com.web3pay.token.StablecoinType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

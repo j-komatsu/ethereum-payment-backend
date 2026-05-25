@@ -1,7 +1,5 @@
-package com.example.payment.repository;
+package com.web3pay.payment;
 
-import com.example.payment.model.PaymentOrder;
-import com.example.payment.model.PaymentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.Instant;

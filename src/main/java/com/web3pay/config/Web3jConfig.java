@@ -1,4 +1,4 @@
-package com.example.payment.config;
+package com.web3pay.config;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;

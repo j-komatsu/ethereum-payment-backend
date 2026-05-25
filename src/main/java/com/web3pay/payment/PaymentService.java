@@ -1,10 +1,5 @@
-package com.example.payment.service;
+package com.web3pay.payment;
 
-import com.example.payment.controller.CreatePaymentRequest;
-import com.example.payment.exception.PaymentOrderNotFoundException;
-import com.example.payment.model.PaymentOrder;
-import com.example.payment.model.PaymentStatus;
-import com.example.payment.repository.PaymentOrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
