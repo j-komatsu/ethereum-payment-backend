@@ -3,6 +3,7 @@ package com.web3pay.payment;
 import com.web3pay.token.StablecoinType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -21,6 +22,7 @@ public record CreatePaymentRequest(
         @NotNull
         StablecoinType token,
 
+        @Min(1)
         @Max(86400)
         Long ttlSeconds
 ) {}

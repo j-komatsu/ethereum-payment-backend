@@ -3,12 +3,14 @@ package com.web3pay.exception;
 import com.web3pay.chain.ChainCommunicationException;
 import com.web3pay.payment.PaymentOrderNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -39,7 +41,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ChainCommunicationException.class)
     ProblemDetail handleChainCommunication(ChainCommunicationException ex) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, ex.getMessage());
+        log.error("Ethereum node communication error", ex);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, "Ethereum ノードとの通信に失敗しました");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

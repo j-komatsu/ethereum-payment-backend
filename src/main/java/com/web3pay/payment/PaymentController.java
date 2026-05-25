@@ -4,11 +4,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Payments", description = "支払いオーダー管理 API")
 @RestController
@@ -31,10 +32,11 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.getOrder(id));
     }
 
-    @Operation(summary = "支払いオーダー一覧", description = "全オーダーを返します。status パラメータでフィルタリング可能")
+    @Operation(summary = "支払いオーダー一覧", description = "全オーダーを返します。status パラメータでフィルタリング可能（ページネーション対応）")
     @GetMapping
-    public ResponseEntity<List<PaymentOrder>> listPaymentOrders(
-            @RequestParam(required = false) String status) {
-        return ResponseEntity.ok(paymentService.listOrders(status));
+    public ResponseEntity<Page<PaymentOrder>> listPaymentOrders(
+            @RequestParam(required = false) String status,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(paymentService.listOrders(status, pageable));
     }
 }
