@@ -50,7 +50,7 @@ case ${DEC_CHAIN} in
   1)   NETWORK="Ethereum Mainnet" ;;
   11155111) NETWORK="Sepolia Testnet" ;;
   137) NETWORK="Polygon Mainnet" ;;
-  80001) NETWORK="Polygon Mumbai Testnet" ;;
+  80002) NETWORK="Polygon Amoy Testnet" ;;
   *)   NETWORK="Unknown (chainId=${DEC_CHAIN})" ;;
 esac
 
