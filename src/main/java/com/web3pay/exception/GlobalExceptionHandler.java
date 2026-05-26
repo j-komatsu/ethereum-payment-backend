@@ -48,8 +48,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        String detail = "パラメータ '" + ex.getName() + "' の値が不正です: " + ex.getValue();
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "パラメータ '" + ex.getName() + "' の値が不正です");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
