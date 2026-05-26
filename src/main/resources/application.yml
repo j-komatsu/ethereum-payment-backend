@@ -28,6 +28,11 @@ web3j:
 payment:
   default-ttl-seconds: ${PAYMENT_DEFAULT_TTL_SECONDS:3600}
   max-ttl-seconds: ${PAYMENT_MAX_TTL_SECONDS:86400}
+  expiry-check-interval-ms: ${PAYMENT_EXPIRY_CHECK_INTERVAL_MS:60000}
+
+poller:
+  enabled: ${POLLER_ENABLED:true}
+  interval-ms: ${POLLER_INTERVAL_MS:15000}
 
 management:
   endpoints:

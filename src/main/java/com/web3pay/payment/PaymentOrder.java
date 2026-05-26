@@ -46,6 +46,7 @@ public class PaymentOrder {
     @Column(nullable = false)
     private PaymentStatus status;
 
+    @Column(unique = true, length = 66)
     private String txHash;
 
     @Column(nullable = false)

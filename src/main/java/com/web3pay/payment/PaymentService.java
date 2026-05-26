@@ -1,5 +1,7 @@
 package com.web3pay.payment;
 
+import com.web3pay.token.StablecoinType;
+import com.web3pay.util.TokenAmountConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,9 +10,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.HexFormat;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -78,6 +83,42 @@ public class PaymentService {
             throw new IllegalArgumentException("不正なステータス値です: " + statusParam);
         }
         return repository.findByStatus(status, pageable);
+    }
+
+    /**
+     * Called by TransferEventPoller when a Transfer event is detected on-chain.
+     * Matches the incoming transfer to a PENDING PaymentOrder and updates its status.
+     * Idempotent: if txHash already processed, silently skips.
+     */
+    @Transactional
+    public void confirmPayment(String toAddress, StablecoinType token, BigInteger rawAmount, String txHash) {
+        if (repository.existsByTxHash(txHash)) {
+            log.debug("Already processed txHash={}, skipping", txHash);
+            return;
+        }
+
+        Optional<PaymentOrder> optOrder = repository
+                .findFirstByStatusAndReceiverAddressIgnoreCaseAndToken(PaymentStatus.PENDING, toAddress, token);
+
+        if (optOrder.isEmpty()) {
+            log.debug("No PENDING order for receiver={} token={}", toAddress, token);
+            return;
+        }
+
+        PaymentOrder order = optOrder.get();
+        BigDecimal actual = TokenAmountConverter.toHuman(rawAmount, token.getDecimals());
+        int cmp = actual.compareTo(order.getExpectedAmount());
+        PaymentStatus newStatus = cmp == 0 ? PaymentStatus.CONFIRMED
+                : cmp > 0 ? PaymentStatus.OVERPAID
+                : PaymentStatus.UNDERPAID;
+
+        order.setStatus(newStatus);
+        order.setTxHash(txHash);
+        order.setConfirmedAt(Instant.now());
+        repository.save(order);
+
+        log.info("Payment {} id={} txHash={} expected={} actual={}",
+                newStatus, order.getId(), txHash, order.getExpectedAmount(), actual);
     }
 
     private static String generateConsumerNonce() {
