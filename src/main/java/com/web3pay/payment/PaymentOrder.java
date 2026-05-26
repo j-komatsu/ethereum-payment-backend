@@ -25,6 +25,9 @@ public class PaymentOrder {
     @Column(nullable = false)
     private String receiverAddress;
 
+    @Column(nullable = false)
+    private String senderAddress;
+
     @Column(nullable = false, precision = 36, scale = 18)
     private BigDecimal expectedAmount;
 

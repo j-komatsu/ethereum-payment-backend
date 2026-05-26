@@ -3,11 +3,12 @@ package com.web3pay.payment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -21,12 +22,13 @@ public class PaymentService {
 
     @Transactional
     public PaymentOrder createOrder(CreatePaymentRequest request) {
-        long ttl = request.getTtlSeconds() != null ? request.getTtlSeconds() : defaultTtlSeconds;
+        long ttl = request.ttlSeconds() != null ? request.ttlSeconds() : defaultTtlSeconds;
 
         PaymentOrder order = PaymentOrder.builder()
-                .receiverAddress(request.getReceiverAddress())
-                .expectedAmount(request.getAmount())
-                .token(request.getToken())
+                .receiverAddress(request.receiverAddress())
+                .senderAddress(request.senderAddress())
+                .expectedAmount(request.amount())
+                .token(request.token())
                 .status(PaymentStatus.PENDING)
                 .expiresAt(Instant.now().plusSeconds(ttl))
                 .build();
@@ -43,11 +45,16 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public List<PaymentOrder> listOrders(String statusParam) {
+    public Page<PaymentOrder> listOrders(String statusParam, Pageable pageable) {
         if (statusParam == null) {
-            return repository.findAll();
+            return repository.findAll(pageable);
         }
-        PaymentStatus status = PaymentStatus.valueOf(statusParam.toUpperCase());
-        return repository.findByStatus(status);
+        PaymentStatus status;
+        try {
+            status = PaymentStatus.valueOf(statusParam.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("不正なステータス値です: " + statusParam);
+        }
+        return repository.findByStatus(status, pageable);
     }
 }
