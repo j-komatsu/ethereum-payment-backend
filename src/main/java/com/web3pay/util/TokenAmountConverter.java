@@ -14,6 +14,12 @@ public final class TokenAmountConverter {
      *     USDC(decimals=6)  1_000_000 → "1"
      */
     public static BigDecimal toHuman(BigInteger rawAmount, int decimals) {
+        if (rawAmount == null) {
+            throw new IllegalArgumentException("rawAmount must not be null");
+        }
+        if (rawAmount.signum() < 0) {
+            throw new IllegalArgumentException("rawAmount must not be negative: " + rawAmount);
+        }
         return new BigDecimal(rawAmount).movePointLeft(decimals).stripTrailingZeros();
     }
 

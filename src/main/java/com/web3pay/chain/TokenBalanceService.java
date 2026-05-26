@@ -29,22 +29,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TokenBalanceService {
 
-    private final Web3j web3j;
+    private final ChainRegistry chainRegistry;
 
     public TokenBalanceResponse getTokenBalance(String walletAddress, StablecoinType token) {
         String checksumAddress = Keys.toChecksumAddress(walletAddress);
         try {
-            BigInteger rawBalance = callBalanceOf(checksumAddress, token.getContractAddress());
+            Web3j web3j = chainRegistry.resolve(token.getChainId());
+            BigInteger rawBalance = callBalanceOf(web3j, checksumAddress, token.getContractAddress());
             BigDecimal humanBalance = TokenAmountConverter.toHuman(rawBalance, token.getDecimals());
             log.debug("Token balance query: address={} token={} raw={}", checksumAddress, token, rawBalance);
             return new TokenBalanceResponse(checksumAddress, token.name(), humanBalance.toPlainString(), rawBalance.toString());
         } catch (IOException e) {
-            throw new ChainCommunicationException("Ethereum ノードとの通信に失敗しました", e);
+            throw new ChainCommunicationException("ノードとの通信に失敗しました", e);
         }
     }
 
     @SuppressWarnings("rawtypes")
-    private BigInteger callBalanceOf(String walletAddress, String contractAddress) throws IOException {
+    private BigInteger callBalanceOf(Web3j web3j, String walletAddress, String contractAddress) throws IOException {
         Function function = new Function(
                 "balanceOf",
                 Collections.singletonList(new Address(walletAddress)),
@@ -52,17 +53,26 @@ public class TokenBalanceService {
         );
         String encodedFunction = FunctionEncoder.encode(function);
 
-        // LATEST を使用: 残高照会用途のため許容（決済確定には使用禁止）
+        // from=null: eth_call は状態変更しないため送信者署名が不要
         EthCall response = web3j.ethCall(
-                Transaction.createEthCallTransaction(walletAddress, contractAddress, encodedFunction),
+                Transaction.createEthCallTransaction(null, contractAddress, encodedFunction),
                 DefaultBlockParameterName.LATEST
         ).send();
 
+        if (response.hasError()) {
+            log.error("eth_call error: code={} message={}", response.getError().getCode(), response.getError().getMessage());
+            throw new ChainCommunicationException("コントラクト呼び出しでエラーが発生しました", null);
+        }
+
         if (response.isReverted()) {
-            throw new ChainCommunicationException("コントラクト呼び出しが失敗しました: " + response.getRevertReason(), null);
+            log.error("eth_call reverted: reason={}", response.getRevertReason());
+            throw new ChainCommunicationException("コントラクト呼び出しが失敗しました", null);
         }
 
         List<Type> result = FunctionReturnDecoder.decode(response.getValue(), function.getOutputParameters());
+        if (result.isEmpty()) {
+            throw new ChainCommunicationException("コントラクトから空のレスポンスが返されました", null);
+        }
         return ((Uint256) result.get(0)).getValue();
     }
 }

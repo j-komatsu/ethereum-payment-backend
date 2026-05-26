@@ -9,6 +9,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Slf4j
 @RestControllerAdvice
@@ -43,6 +44,12 @@ public class GlobalExceptionHandler {
     ProblemDetail handleChainCommunication(ChainCommunicationException ex) {
         log.error("Ethereum node communication error", ex);
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, "Ethereum ノードとの通信に失敗しました");
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String detail = "パラメータ '" + ex.getName() + "' の値が不正です: " + ex.getValue();
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

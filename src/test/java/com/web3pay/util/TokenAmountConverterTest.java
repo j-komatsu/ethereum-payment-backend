@@ -29,6 +29,18 @@ class TokenAmountConverterTest {
     }
 
     @Test
+    void toHuman_negativeRawAmount_throwsIllegalArgumentException() {
+        assertThatThrownBy(() -> TokenAmountConverter.toHuman(BigInteger.valueOf(-1), 18))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void toHuman_nullRawAmount_throwsIllegalArgumentException() {
+        assertThatThrownBy(() -> TokenAmountConverter.toHuman(null, 18))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void toRaw_jpyc18decimals_convertsCorrectly() {
         BigDecimal human = new BigDecimal("1.5");
         BigInteger expected = new BigDecimal("1.5").movePointRight(18).toBigIntegerExact();

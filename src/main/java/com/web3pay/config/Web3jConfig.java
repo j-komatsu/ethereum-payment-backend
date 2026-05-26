@@ -16,15 +16,34 @@ public class Web3jConfig {
     @Value("${web3j.client-address}")
     private String clientAddress;
 
+    @Value("${web3j.polygon-endpoint:${web3j.client-address}}")
+    private String polygonEndpoint;
+
+    @Value("${web3j.ethereum-endpoint:${web3j.client-address}}")
+    private String ethereumEndpoint;
+
     @Bean
     public Web3j web3j() {
+        return buildWeb3j(clientAddress);
+    }
+
+    @Bean("polygonWeb3j")
+    public Web3j polygonWeb3j() {
+        return buildWeb3j(polygonEndpoint);
+    }
+
+    @Bean("ethereumWeb3j")
+    public Web3j ethereumWeb3j() {
+        return buildWeb3j(ethereumEndpoint);
+    }
+
+    private Web3j buildWeb3j(String endpoint) {
         OkHttpClient httpClient = new OkHttpClient.Builder()
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.NONE))
                 .build();
-
-        return Web3j.build(new HttpService(clientAddress, httpClient, false));
+        return Web3j.build(new HttpService(endpoint, httpClient, false));
     }
 }
