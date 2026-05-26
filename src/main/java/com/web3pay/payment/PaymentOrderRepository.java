@@ -15,7 +15,8 @@ public interface PaymentOrderRepository extends JpaRepository<PaymentOrder, Stri
 
     List<PaymentOrder> findByStatusAndExpiresAtBefore(PaymentStatus status, Instant now);
 
-    Optional<PaymentOrder> findFirstByStatusAndReceiverAddressIgnoreCaseAndToken(
+    // OrderByCreatedAtAsc ensures deterministic match when multiple PENDING orders share the same receiver+token
+    Optional<PaymentOrder> findFirstByStatusAndReceiverAddressIgnoreCaseAndTokenOrderByCreatedAtAsc(
             PaymentStatus status, String receiverAddress, StablecoinType token);
 
     boolean existsByTxHash(String txHash);

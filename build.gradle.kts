@@ -37,6 +37,9 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("com.h2database:h2")
 
+    // Database migrations (production only; disabled for dev/test via application profiles)
+    implementation("org.flywaydb:flyway-core")
+
     // OpenAPI / Swagger UI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
 

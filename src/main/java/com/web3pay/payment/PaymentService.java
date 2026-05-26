@@ -98,7 +98,7 @@ public class PaymentService {
         }
 
         Optional<PaymentOrder> optOrder = repository
-                .findFirstByStatusAndReceiverAddressIgnoreCaseAndToken(PaymentStatus.PENDING, toAddress, token);
+                .findFirstByStatusAndReceiverAddressIgnoreCaseAndTokenOrderByCreatedAtAsc(PaymentStatus.PENDING, toAddress, token);
 
         if (optOrder.isEmpty()) {
             log.debug("No PENDING order for receiver={} token={}", toAddress, token);

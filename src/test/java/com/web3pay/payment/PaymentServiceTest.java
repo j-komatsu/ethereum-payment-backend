@@ -65,7 +65,7 @@ class PaymentServiceTest {
         PaymentOrder order = pendingOrder(expected);
 
         when(repository.existsByTxHash(TX_HASH)).thenReturn(false);
-        when(repository.findFirstByStatusAndReceiverAddressIgnoreCaseAndToken(
+        when(repository.findFirstByStatusAndReceiverAddressIgnoreCaseAndTokenOrderByCreatedAtAsc(
                 PaymentStatus.PENDING, RECEIVER, TOKEN))
                 .thenReturn(Optional.of(order));
 
@@ -85,7 +85,7 @@ class PaymentServiceTest {
         PaymentOrder order = pendingOrder(expected);
 
         when(repository.existsByTxHash(TX_HASH)).thenReturn(false);
-        when(repository.findFirstByStatusAndReceiverAddressIgnoreCaseAndToken(
+        when(repository.findFirstByStatusAndReceiverAddressIgnoreCaseAndTokenOrderByCreatedAtAsc(
                 PaymentStatus.PENDING, RECEIVER, TOKEN))
                 .thenReturn(Optional.of(order));
 
@@ -102,7 +102,7 @@ class PaymentServiceTest {
         PaymentOrder order = pendingOrder(expected);
 
         when(repository.existsByTxHash(TX_HASH)).thenReturn(false);
-        when(repository.findFirstByStatusAndReceiverAddressIgnoreCaseAndToken(
+        when(repository.findFirstByStatusAndReceiverAddressIgnoreCaseAndTokenOrderByCreatedAtAsc(
                 PaymentStatus.PENDING, RECEIVER, TOKEN))
                 .thenReturn(Optional.of(order));
 
@@ -119,14 +119,14 @@ class PaymentServiceTest {
 
         paymentService.confirmPayment(RECEIVER, TOKEN, toRaw(new BigDecimal("100")), TX_HASH);
 
-        verify(repository, never()).findFirstByStatusAndReceiverAddressIgnoreCaseAndToken(any(), any(), any());
+        verify(repository, never()).findFirstByStatusAndReceiverAddressIgnoreCaseAndTokenOrderByCreatedAtAsc(any(), any(), any());
         verify(repository, never()).save(any());
     }
 
     @Test
     void confirmPayment_noMatchingOrder_skipsProcessing() {
         when(repository.existsByTxHash(TX_HASH)).thenReturn(false);
-        when(repository.findFirstByStatusAndReceiverAddressIgnoreCaseAndToken(
+        when(repository.findFirstByStatusAndReceiverAddressIgnoreCaseAndTokenOrderByCreatedAtAsc(
                 PaymentStatus.PENDING, RECEIVER, TOKEN))
                 .thenReturn(Optional.empty());
 
@@ -142,7 +142,7 @@ class PaymentServiceTest {
         String lowerReceiver = RECEIVER.toLowerCase();
 
         when(repository.existsByTxHash(TX_HASH)).thenReturn(false);
-        when(repository.findFirstByStatusAndReceiverAddressIgnoreCaseAndToken(
+        when(repository.findFirstByStatusAndReceiverAddressIgnoreCaseAndTokenOrderByCreatedAtAsc(
                 PaymentStatus.PENDING, lowerReceiver, TOKEN))
                 .thenReturn(Optional.of(order));
 

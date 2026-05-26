@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.web3j.abi.EventEncoder;
-import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Event;
@@ -21,6 +20,7 @@ import org.web3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Component
@@ -33,6 +33,9 @@ public class TransferEventPoller {
             new TypeReference<Uint256>() {}
     ));
     private static final String TRANSFER_TOPIC = EventEncoder.encode(TRANSFER_EVENT);
+
+    private static final Pattern ETH_ADDRESS_PATTERN = Pattern.compile("^0x[0-9a-fA-F]{40}$");
+    private static final Pattern TX_HASH_PATTERN = Pattern.compile("^0x[0-9a-fA-F]{64}$");
 
     // Polygon PoS: 20 blocks ≈ 40 seconds after confirmation
     private static final int REQUIRED_CONFIRMATIONS = 20;
@@ -102,8 +105,9 @@ public class TransferEventPoller {
 
         EthLog ethLog = web3j.ethGetLogs(filter).send();
         if (ethLog.hasError()) {
-            log.error("eth_getLogs error: {}", ethLog.getError().getMessage());
-            return;
+            // Throw so that pollToken's catch block prevents lastProcessedBlock from advancing
+            throw new ChainCommunicationException(
+                    "eth_getLogs error for " + token.name() + ": " + ethLog.getError().getMessage());
         }
 
         var logs = ethLog.getLogs();
@@ -129,7 +133,12 @@ public class TransferEventPoller {
             // topics[2] = to   (indexed, padded to 32 bytes)
             String to = decodeAddress(topics.get(2));
             BigInteger rawAmount = Numeric.decodeQuantity(logObj.getData());
+
             String txHash = logObj.getTransactionHash();
+            if (txHash == null || !TX_HASH_PATTERN.matcher(txHash).matches()) {
+                log.warn("Invalid txHash format in Transfer log, skipping: {}", txHash);
+                return;
+            }
 
             log.debug("Transfer event: to={} amount={} txHash={}", to, rawAmount, txHash);
             paymentService.confirmPayment(to, token, rawAmount, txHash);
@@ -140,8 +149,16 @@ public class TransferEventPoller {
     }
 
     private static String decodeAddress(String paddedHex) {
-        // Remove 0x prefix, take last 40 chars (20 bytes = address)
         String hex = Numeric.cleanHexPrefix(paddedHex);
-        return "0x" + hex.substring(hex.length() - 40);
+        if (hex.length() != 64) {
+            throw new IllegalArgumentException(
+                    "Invalid topic length for address: expected 64 hex chars, got " + hex.length());
+        }
+        // Ethereum address is the last 20 bytes (40 hex chars) of the 32-byte padded topic
+        String address = "0x" + hex.substring(24);
+        if (!ETH_ADDRESS_PATTERN.matcher(address).matches()) {
+            throw new IllegalArgumentException("Decoded address failed format validation: " + address);
+        }
+        return address;
     }
 }
