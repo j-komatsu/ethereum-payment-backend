@@ -31,9 +31,9 @@
 
 ```
 Phase 0  ✅ 完了   初期構成（Gradle・パッケージ・README・セキュリティ基盤）
-Phase 1  🔜 次     環境整備 + Ethereum 基礎理解
-Phase 2            Web3j 接続 + アカウント・残高操作
-Phase 3            ERC-20 規格 + JPYC 残高取得（JPYC優先）
+Phase 1  ✅ 完了   環境整備 + Ethereum 基礎理解
+Phase 2  ✅ 完了   Web3j 接続 + アカウント・残高操作
+Phase 3  🔜 次     ERC-20 規格 + JPYC 残高取得（JPYC優先）
 Phase 4            Transfer イベント監視 + 入金検知
 Phase 5            ウォレット認証 + スマコン事前承認決済（SIWE・Permit）
 Phase 6            自動購入・サブスク + テスト + OpenAPI
