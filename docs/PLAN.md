@@ -33,9 +33,10 @@
 Phase 0  ✅ 完了   初期構成（Gradle・パッケージ・README・セキュリティ基盤）
 Phase 1  ✅ 完了   環境整備 + Ethereum 基礎理解
 Phase 2  ✅ 完了   Web3j 接続 + アカウント・残高操作
-Phase 3  🔜 次     ERC-20 規格 + JPYC 残高取得（JPYC優先）
-Phase 4            Transfer イベント監視 + 入金検知
+Phase 3  ✅ 完了   ERC-20 規格 + JPYC 残高取得（JPYC優先）
+Phase 4  🔜 次     Transfer イベント監視 + 入金検知
 Phase 5            ウォレット認証 + スマコン事前承認決済（SIWE・Permit）
+Phase 5-F          フロントエンド（Next.js 15 + Wagmi v2 + RainbowKit）送金UI
 Phase 6            自動購入・サブスク + テスト + OpenAPI
 Phase 7            デプロイ検討（Railway / Render 無料枠）
 ```
@@ -706,6 +707,133 @@ docs: report-05 ウォレット認証・スマコン決済（SIWE・Permit・tra
 
 ---
 
+## Phase 5-F：フロントエンド（送金UI）
+
+**目標：** ウォレット接続 → 残高確認 → Permit 署名 → 送金確定 の一連の流れをブラウザで操作できる画面を実装する
+
+### 技術スタック
+
+| カテゴリ | 技術 | バージョン | 役割 |
+|---|---|---|---|
+| フレームワーク | Next.js (App Router) | 15.x | SSR + クライアント画面 |
+| 言語 | TypeScript | 5.x | 型安全 |
+| Web3 ライブラリ | Wagmi v2 + Viem | latest | ウォレット接続・署名・コントラクト呼び出し |
+| ウォレットUI | RainbowKit | 2.x | MetaMask/HashPort 接続ダイアログ |
+| UI コンポーネント | shadcn/ui + Tailwind CSS | latest | モダンな見た目 |
+| HTTP クライアント | fetch（Next.js ビルトイン） | — | バックエンド API 呼び出し |
+
+> **配置:** `ethereum-payment-frontend/`（バックエンドと別リポジトリ or monorepo サブディレクトリ）
+
+---
+
+### Day 21-F — プロジェクト初期構成 + ウォレット接続画面
+
+**構成コマンド:**
+```bash
+npx create-next-app@latest ethereum-payment-frontend \
+  --typescript --tailwind --app --src-dir
+cd ethereum-payment-frontend
+npx shadcn@latest init
+npm install wagmi viem @rainbow-me/rainbowkit @tanstack/react-query
+```
+
+**実装内容:**
+- Wagmi + RainbowKit のプロバイダーセットアップ（Polygon Mainnet / Ethereum Mainnet 設定）
+- ウォレット接続ボタン（MetaMask / HashPort 対応）
+- 接続中のアドレス・チェーン表示
+
+**画面:**
+```
+┌─────────────────────────────────┐
+│  💳 JPYC Payment Demo           │
+│                                 │
+│  [ウォレットを接続]              │
+│                                 │
+│  接続後: 0xd8dA...6045          │
+│  チェーン: Polygon Mainnet       │
+└─────────────────────────────────┘
+```
+
+---
+
+### Day 22-F — トークン残高照会画面
+
+**実装内容:**
+- バックエンド `GET /api/v1/chain/token-balance` を呼び出して残高を表示
+- JPYC / USDC / USDT / DAI のタブ切り替え
+- ポーリング（10秒ごと自動更新）
+
+**画面:**
+```
+┌─────────────────────────────────┐
+│  残高照会                        │
+│  アドレス: 0xd8dA...6045        │
+│                                 │
+│  [JPYC] [USDC] [USDT] [DAI]    │
+│                                 │
+│  JPYC 残高: 1,000.00 JPYC      │
+│  （raw: 1000000000000000000000）│
+└─────────────────────────────────┘
+```
+
+---
+
+### Day 23-F — 送金フォーム + SIWE 認証
+
+**実装内容:**
+- SIWE ログイン（`GET /api/v1/auth/nonce` → ウォレット署名 → `POST /api/v1/auth/verify`）
+- JWT をブラウザ（メモリ or httpOnly Cookie）に保持
+- 送金フォーム: 受取アドレス・金額・トークン種別の入力
+
+**画面:**
+```
+┌─────────────────────────────────┐
+│  送金                            │
+│                                 │
+│  受取アドレス: [0x............] │
+│  金額:         [    100] JPYC   │
+│  トークン:     [JPYC ▼]        │
+│                                 │
+│  [確認画面へ]                    │
+└─────────────────────────────────┘
+```
+
+---
+
+### Day 24-F — Permit 署名 + 送金確定
+
+**実装内容:**
+- `wagmi` の `useSignTypedData`（EIP-712）で Permit 署名を実行
+- バックエンド `POST /api/v1/payments` で決済注文を作成
+- 決済ステータスのポーリング表示（PENDING → CONFIRMED / EXPIRED）
+
+**送金フロー（画面遷移）:**
+```
+フォーム入力
+  → 確認画面（金額・受取アドレス・手数料）
+  → [Permit 署名] ← MetaMask/HashPort でポップアップ
+  → バックエンドへ送信
+  → ステータス待機画面（ポーリング）
+  → 完了画面（txHash 表示）
+```
+
+---
+
+### Day 25-F — レポート執筆
+
+**ファイル:** `docs/report-05F-frontend.md`
+
+**必ず答える問い:**
+```
+1. Wagmi / Viem とは何か（ethers.js との違い）
+2. RainbowKit のウォレット対応範囲
+3. useSignTypedData で EIP-712 署名をする仕組み
+4. フロントとバックエンドの責任分界（署名はフロント・送金処理はバック）
+5. SIWE の JWT をどこに保存するか（メモリ vs Cookie のトレードオフ）
+```
+
+---
+
 ## Phase 6：自動購入・サブスク + テスト + OpenAPI
 
 **目標：** 定期課金・自動購入を実装し、テストと API ドキュメントを整備する
@@ -925,10 +1053,11 @@ docs: report-07 デプロイ（Railway・Render・H2→PostgreSQL移行）
 Week 1    Phase 1  Day 1-5   環境整備 + Ethereum基礎レポート
 Week 2    Phase 2  Day 6-10  Web3j接続・残高API
 Week 3    Phase 3  Day 11-15 ERC-20・JPYC残高API
-Week 4    Phase 4  Day 16-20 Transferイベント監視・入金検知
-Week 5    Phase 5  Day 21-25 SIWE認証・EIP-2612 Permit・即時決済
-Week 6    Phase 6  Day 26-30 Sablier自動購入・テスト・OpenAPI
-Week 7    Phase 7  Day 31-35 Docker・デプロイ
+Week 4    Phase 4   Day 16-20 Transferイベント監視・入金検知
+Week 5    Phase 5   Day 21-25 SIWE認証・EIP-2612 Permit・即時決済
+Week 5-F  Phase 5-F Day 21F-25F フロントエンド（Next.js・Wagmi・送金UI）
+Week 6    Phase 6   Day 26-30 Sablier自動購入・テスト・OpenAPI
+Week 7    Phase 7   Day 31-35 Docker・デプロイ
 ```
 
 ---
