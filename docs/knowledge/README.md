@@ -12,7 +12,10 @@
 | ファイル | 内容 |
 |---|---|
 | `_template.md` | 新規作成時のテンプレート |
-| `day-01-multi-agent-review.md` | マルチエージェントレビューの実際の価値 |
+| `day-01-multi-agent-review.md` | マルチエージェントレビューの実際の価値（Phase 0）|
+| `day-02-phase2-phase3-learnings.md` | マルチチェーンWeb3j・eth_call設計・JPYC新アドレス（Phase 2・3）|
+| `day-03-frontend-payment-design.md` | DApp/WalletConnect/CPM/MPM・レビュー漏れ反省（Phase 3 完了後）|
+| `smartcontract-standards.md` | SIWE・EIP-712・Permit・Sablier・EIP-7702 規格リファレンス |
 
 ## 振り返りの3軸
 

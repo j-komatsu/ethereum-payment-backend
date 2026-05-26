@@ -1,6 +1,6 @@
 # スマートコントラクト規格ナレッジ
 
-> 蓄積日: 2026-05-24
+> 初回蓄積日: 2026-05-24 / 最終更新: 2026-05-26
 > 関連フェーズ: Phase 5（ウォレット認証・事前承認決済）・Phase 6（自動購入・ストリーミング）
 
 ---
@@ -90,12 +90,12 @@ domain_separator:
 
 ---
 
-## 3. EIP-2612 — Permit（ガスレス ERC-20 承認）
+## 3. EIP-2612 — Permit（ユーザーガスレス ERC-20 承認）
 
 ### 概要
 
 ERC-20 の `approve()` をオフチェーン署名で代替できる規格。
-ユーザーが ETH を持っていなくても承認ができる（ガスレス）。
+ユーザーはガス不要で承認できる（ただし permit TX 送信はバックエンドが行い、Polygon では POL でガスを負担する）。
 
 ### 従来の approve との比較
 
@@ -124,7 +124,7 @@ permit(
 ### JPYC との関係
 
 **JPYC（JPYCv2）は EIP-2612 対応済み**。
-コントラクトアドレス: `0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB`（**Polygon mainnet**）
+コントラクトアドレス: `0xE7C3D8C9a439feDe00D2600032D5dB0Be71C3c29`（**Polygon mainnet**）
 → Phase 5 で即座に利用可能。
 
 ### リプレイ攻撃防止
@@ -309,7 +309,7 @@ OpenZeppelin の実装をベースにしていると推定される。
 
 ## 9. JPYC 対応規格マトリクス
 
-> JPYC コントラクトアドレス: `0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB`（**Polygon mainnet**、decimals=18）
+> JPYC コントラクトアドレス: `0xE7C3D8C9a439feDe00D2600032D5dB0Be71C3c29`（**Polygon mainnet**、decimals=18）
 
 | 規格 | 対応状況 | 活用フェーズ |
 |---|---|---|
