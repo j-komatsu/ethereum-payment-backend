@@ -22,6 +22,8 @@ spring:
 
 web3j:
   client-address: ${WEB3J_CLIENT_ADDRESS}
+  polygon-endpoint: ${WEB3J_POLYGON_ENDPOINT}
+  ethereum-endpoint: ${WEB3J_ETHEREUM_ENDPOINT}
 
 payment:
   default-ttl-seconds: ${PAYMENT_DEFAULT_TTL_SECONDS:3600}
