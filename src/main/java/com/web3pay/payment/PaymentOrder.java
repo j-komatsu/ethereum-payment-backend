@@ -22,11 +22,18 @@ public class PaymentOrder {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentMode paymentMode;
+
     @Column(nullable = false)
     private String receiverAddress;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String senderAddress;
+
+    @Column(nullable = true, length = 64)
+    private String consumerNonce;
 
     @Column(nullable = false, precision = 36, scale = 18)
     private BigDecimal expectedAmount;
@@ -51,6 +58,9 @@ public class PaymentOrder {
     @PrePersist
     void prePersist() {
         createdAt = Instant.now();
+        if (paymentMode == null) {
+            paymentMode = PaymentMode.MPM;
+        }
         if (status == null) {
             status = PaymentStatus.PENDING;
         }
