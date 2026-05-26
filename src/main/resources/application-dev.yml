@@ -20,6 +20,8 @@ spring:
 
 web3j:
   client-address: ${WEB3J_CLIENT_ADDRESS}
+  polygon-endpoint: ${WEB3J_POLYGON_ENDPOINT:${WEB3J_CLIENT_ADDRESS}}
+  ethereum-endpoint: ${WEB3J_ETHEREUM_ENDPOINT:${WEB3J_CLIENT_ADDRESS}}
 
 management:
   endpoints:
