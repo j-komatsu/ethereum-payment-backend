@@ -114,12 +114,14 @@ Permit 署名（EIP-712）: ガスなし（オフチェーン署名）
 ### Phase 6：Sablier + 自動購入
 
 ```
-Sablier へ JPYC を預ける（ユーザー）:
+Sablier へ JPYC を預ける（ユーザー = ストリーム送信者）:
   ユーザー → depositToSablier(amount) ← ユーザーが POL を支払う
   ※ Permit 署名で JPYC の approve をガスレス化できる（ただし Sablier へのデポジット TX 自体は POL 必要）
 
-Sablier から JPYC を引き出す（マーチャント）:
-  マーチャント → withdraw(streamId, amount, recipient) ← マーチャントが POL を支払う
+Sablier から JPYC を引き出す（受取人 = マーチャント or バックエンド）:
+  withdraw(streamId, amount, recipient) は「ストリーム送信者」か「受取人」が呼び出し可能
+  ← TX 送信者が POL を支払う
+  ※ このプロジェクトではバックエンドがストリーム管理役として withdraw を呼ぶ想定
 
 自動購入ジョブ（@Scheduled）:
   バックエンド → allowance 確認（eth_call, ガスなし）
