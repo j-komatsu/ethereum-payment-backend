@@ -26,6 +26,7 @@ public class PaymentService {
 
         PaymentOrder order = PaymentOrder.builder()
                 .receiverAddress(request.receiverAddress())
+                .senderAddress(request.senderAddress())
                 .expectedAmount(request.amount())
                 .token(request.token())
                 .status(PaymentStatus.PENDING)

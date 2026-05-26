@@ -15,6 +15,10 @@ public record CreatePaymentRequest(
         @Pattern(regexp = "^0x[0-9a-fA-F]{40}$", message = "有効なEthereumアドレス形式（0x + 40文字の16進数）を入力してください")
         String receiverAddress,
 
+        @NotBlank
+        @Pattern(regexp = "^0x[0-9a-fA-F]{40}$", message = "有効なEthereumアドレス形式（0x + 40文字の16進数）を入力してください")
+        String senderAddress,
+
         @NotNull
         @DecimalMin("0.000001")
         BigDecimal amount,
