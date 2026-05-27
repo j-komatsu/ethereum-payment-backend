@@ -30,7 +30,8 @@ for (var result : logs) {
 
 Lombok の `@Data` は JPA エンティティと相性が悪い：
 - `equals/hashCode` が全フィールドで生成されるため、Hibernate プロキシとの比較が壊れる
-- 解決策は `@Getter` + `@Setter` に分離し、`equals/hashCode` を `@Id` のみで実装すること
+- 解決策は `@Getter` + `@Setter` に置き換え、`equals/hashCode` を `@Id` のみで**明示実装**すること（`@Getter/@Setter` だけでは `equals/hashCode` は生成されず Object のデフォルト実装になるため不十分）
+- Phase 4 レビューで `PollerState` を修正、report-04 レビューで `PaymentOrder` も同様に修正済み
 
 ### 4. Flyway 導入のタイミングは「最初から」が理想
 
