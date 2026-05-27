@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/paymentdb-dev
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  flyway:
+    enabled: false
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+web3j:
+  client-address: ${WEB3J_CLIENT_ADDRESS}
+  polygon-endpoint: ${WEB3J_POLYGON_ENDPOINT:${WEB3J_CLIENT_ADDRESS}}
+  ethereum-endpoint: ${WEB3J_ETHEREUM_ENDPOINT:${WEB3J_CLIENT_ADDRESS}}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.web3pay: DEBUG
+    org.web3j: INFO
+    okhttp3: INFO

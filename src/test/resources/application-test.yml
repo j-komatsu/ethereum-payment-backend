@@ -4,9 +4,16 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
+  flyway:
+    enabled: false
   jpa:
     hibernate:
       ddl-auto: create-drop
 
 web3j:
   client-address: http://localhost:8545
+  polygon-endpoint: http://localhost:8545
+  ethereum-endpoint: http://localhost:8545
+
+poller:
+  enabled: false
