@@ -1,5 +1,7 @@
 package com.web3pay.chain;
 
+import com.web3pay.auth.JwtService;
+import com.web3pay.config.SecurityConfig;
 import com.web3pay.exception.GlobalExceptionHandler;
 import com.web3pay.token.StablecoinType;
 import org.junit.jupiter.api.Test;
@@ -18,7 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TokenBalanceController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class TokenBalanceControllerTest {
 
     @Autowired
@@ -26,6 +28,9 @@ class TokenBalanceControllerTest {
 
     @MockBean
     private TokenBalanceService tokenBalanceService;
+
+    @MockBean
+    private JwtService jwtService;
 
     private static final String VALID_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
 

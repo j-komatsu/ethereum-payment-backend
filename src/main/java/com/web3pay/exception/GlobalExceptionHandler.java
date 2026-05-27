@@ -1,5 +1,6 @@
 package com.web3pay.exception;
 
+import com.web3pay.auth.SiweException;
 import com.web3pay.chain.ChainCommunicationException;
 import com.web3pay.payment.PaymentOrderNotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -15,6 +16,11 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(SiweException.class)
+    ProblemDetail handleSiwe(SiweException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
 
     @ExceptionHandler(PaymentOrderNotFoundException.class)
     ProblemDetail handleNotFound(PaymentOrderNotFoundException ex) {
