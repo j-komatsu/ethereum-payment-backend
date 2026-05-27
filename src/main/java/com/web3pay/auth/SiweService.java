@@ -105,12 +105,19 @@ public class SiweService {
     }
 
     private String extractField(String message, String prefix) {
+        String found = null;
         for (String line : message.split("\n")) {
             if (line.startsWith(prefix)) {
-                return line.substring(prefix.length()).trim();
+                if (found != null) {
+                    throw new SiweException("Duplicate field '" + prefix.trim() + "' in SIWE message");
+                }
+                found = line.substring(prefix.length()).trim();
             }
         }
-        throw new SiweException("Field '" + prefix.trim() + "' not found in SIWE message");
+        if (found == null) {
+            throw new SiweException("Field '" + prefix.trim() + "' not found in SIWE message");
+        }
+        return found;
     }
 
     private String extractDomain(String message) {
