@@ -19,7 +19,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SiweException.class)
     ProblemDetail handleSiwe(SiweException ex) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        log.warn("SIWE authentication failed: {}", ex.getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
     }
 
     @ExceptionHandler(PaymentOrderNotFoundException.class)

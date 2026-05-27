@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 public class SiweService {
 
     private static final Pattern ETH_ADDRESS_PATTERN = Pattern.compile("^0x[0-9a-fA-F]{40}$");
+    private static final int MAX_MESSAGE_LENGTH = 4096;
 
     private final SiweNonceRepository nonceRepository;
     private final JwtService jwtService;
@@ -51,19 +52,35 @@ public class SiweService {
 
     @Transactional
     public String verify(String message, String hexSignature, String address) {
+        if (message.length() > MAX_MESSAGE_LENGTH) {
+            throw new SiweException("SIWE message too long");
+        }
+
+        // Normalize line endings before parsing and signature verification
+        String normalizedMessage = message.replace("\r\n", "\n").replace("\r", "\n");
+
         if (!ETH_ADDRESS_PATTERN.matcher(address).matches()) {
             throw new SiweException("Invalid address format");
         }
 
-        String nonce = extractField(message, "Nonce: ");
-        String msgChainId = extractField(message, "Chain ID: ");
-        String msgDomain = extractDomain(message);
+        String nonce = extractField(normalizedMessage, "Nonce: ");
+        String msgChainId = extractField(normalizedMessage, "Chain ID: ");
+        String msgDomain = extractDomain(normalizedMessage);
+        String msgAddress = extractMessageAddress(normalizedMessage);
+        String version = extractField(normalizedMessage, "Version: ");
 
         if (!this.domain.equals(msgDomain)) {
             throw new SiweException("Domain mismatch");
         }
         if (!String.valueOf(chainId).equals(msgChainId)) {
             throw new SiweException("Chain ID mismatch");
+        }
+        if (!"1".equals(version)) {
+            throw new SiweException("Unsupported SIWE version: " + version);
+        }
+        // Verify that the address in the message body matches the claimed address
+        if (!msgAddress.equalsIgnoreCase(address)) {
+            throw new SiweException("Address in message does not match request address");
         }
 
         SiweNonce nonceEntity = nonceRepository.findById(nonce)
@@ -75,7 +92,8 @@ public class SiweService {
             throw new SiweException("Nonce expired");
         }
 
-        String recoveredAddress = recoverAddress(message, hexSignature);
+        // recoveredAddress is the ground truth — use it for the JWT subject
+        String recoveredAddress = recoverAddress(normalizedMessage, hexSignature);
         if (!recoveredAddress.equalsIgnoreCase(address)) {
             throw new SiweException("Signature verification failed");
         }
@@ -83,7 +101,7 @@ public class SiweService {
         nonceEntity.setUsed(true);
         nonceRepository.save(nonceEntity);
 
-        return jwtService.generate(address.toLowerCase());
+        return jwtService.generate(recoveredAddress.toLowerCase());
     }
 
     private String extractField(String message, String prefix) {
@@ -108,6 +126,18 @@ public class SiweService {
         return firstLine.substring(0, firstLine.length() - suffix.length());
     }
 
+    private String extractMessageAddress(String message) {
+        String[] lines = message.split("\n");
+        if (lines.length < 2) {
+            throw new SiweException("Invalid SIWE message: too short");
+        }
+        String addr = lines[1].trim();
+        if (!ETH_ADDRESS_PATTERN.matcher(addr).matches()) {
+            throw new SiweException("Invalid address in SIWE message body");
+        }
+        return addr;
+    }
+
     private String recoverAddress(String message, String hexSignature) {
         try {
             byte[] sigBytes = Numeric.hexStringToByteArray(hexSignature);
@@ -116,11 +146,14 @@ public class SiweService {
             }
             byte[] r = Arrays.copyOfRange(sigBytes, 0, 32);
             byte[] s = Arrays.copyOfRange(sigBytes, 32, 64);
-            byte v = sigBytes[64];
-            // Normalize: some wallets return v=0/1, EIP-191 expects 27/28
-            if (v < 27) v += 27;
+            // Read as unsigned to avoid signed-byte misinterpretation
+            int vInt = sigBytes[64] & 0xFF;
+            if (vInt < 27) vInt += 27;
+            if (vInt != 27 && vInt != 28) {
+                throw new SiweException("Invalid signature v value: " + vInt);
+            }
 
-            Sign.SignatureData sigData = new Sign.SignatureData(v, r, s);
+            Sign.SignatureData sigData = new Sign.SignatureData((byte) vInt, r, s);
             BigInteger pubKey = Sign.signedPrefixedMessageToKey(
                     message.getBytes(StandardCharsets.UTF_8), sigData);
             return "0x" + Keys.getAddress(pubKey);

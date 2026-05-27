@@ -13,13 +13,14 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private final String secret;
+    private final SecretKey secretKey;
     private final long expirySeconds;
 
     public JwtService(
             @Value("${auth.jwt.secret}") String secret,
             @Value("${auth.jwt.expiry-seconds:86400}") long expirySeconds) {
-        this.secret = secret;
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
         this.expirySeconds = expirySeconds;
     }
 
@@ -29,21 +30,16 @@ public class JwtService {
                 .subject(address)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusSeconds(expirySeconds)))
-                .signWith(getSecretKey())
+                .signWith(secretKey)
                 .compact();
     }
 
     public String extractAddress(String token) {
         return Jwts.parser()
-                .verifyWith(getSecretKey())
+                .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
-    }
-
-    private SecretKey getSecretKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secret);
-        return Keys.hmacShaKeyFor(keyBytes);
     }
 }
