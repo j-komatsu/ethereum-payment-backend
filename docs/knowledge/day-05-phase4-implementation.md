@@ -82,6 +82,22 @@ Spring Boot 3.2.5 の dependency management が管理するバージョンでは
 
 ---
 
+## Git ワークフローの学び
+
+### feature ブランチは必ずベースブランチ HEAD から切る
+
+PR#17 マージ時に `405 Pull Request has merge conflicts` が発生した。原因は feature ブランチが `Initial commit` から分岐していたため、ベースブランチ側に乗っていた "initial Spring Boot + Web3j structure" コミットと同じファイルを別々に変更していたこと。
+
+`git rebase origin/<base>` で解消したが、予防のために CLAUDE.md にルールを追記した。
+
+```bash
+# 正しい手順（毎回これで作成する）
+git fetch origin
+git checkout -b feat/xxx origin/claude/ethereum-payment-backend-init-C4m76
+```
+
+1人開発なので頻度は低いが、セッション跨ぎで新しい feature ブランチを作る際は要注意。
+
 ## 次フェーズへの引き継ぎ事項
 
 - Phase 5 では Spring Security を追加するため、既存エンドポイント（`/api/v1/payments`, `/api/v1/chain`）の公開/認証方針を決定してから着手すること（PLAN.md 参照）
