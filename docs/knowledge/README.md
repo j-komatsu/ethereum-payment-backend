@@ -16,6 +16,7 @@
 | `day-02-phase2-phase3-learnings.md` | マルチチェーンWeb3j・eth_call設計・JPYC新アドレス（Phase 2・3）|
 | `day-03-frontend-payment-design.md` | DApp/WalletConnect/CPM/MPM・レビュー漏れ反省（Phase 3 完了後）|
 | `day-04-pm-pmo-review.md` | PM/PMO レビュー導入・Phase 4 前の計画整理（テスト環境・依存順序）|
+| `day-05-phase4-implementation.md` | Phase 4 実装の発見（Web3j raw型・eth_getLogsエラー設計・Flyway・JPA @Data）|
 | `gas-cost-reference.md` | **ガス代リファレンス**：誰が・何に・いくら（フェーズ別・操作別）|
 | `smartcontract-standards.md` | SIWE・EIP-712・Permit・Sablier・EIP-7702 規格リファレンス |
 
