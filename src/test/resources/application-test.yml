@@ -17,3 +17,12 @@ web3j:
 
 poller:
   enabled: false
+
+auth:
+  jwt:
+    secret: dGVzdC1zZWNyZXQtZm9yLXVuaXQtdGVzdHMtb25seSE=
+    expiry-seconds: 86400
+  siwe:
+    domain: localhost
+    chain-id: 137
+    nonce-ttl-seconds: 300
