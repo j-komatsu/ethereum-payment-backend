@@ -133,7 +133,12 @@ public class PermitService {
             throw new PermitException("Deadline has already passed");
         }
 
-        PaymentOrder order = getValidatedOrder(paymentOrderId);
+        // Load order without PENDING check — CAS (updateStatusConditionally) is the atomic guard
+        PaymentOrder order = orderRepository.findById(paymentOrderId)
+                .orElseThrow(() -> new PaymentOrderNotFoundException(paymentOrderId));
+        if (order.getExpiresAt() != null && order.getExpiresAt().isBefore(Instant.now())) {
+            throw new PermitException("Order " + paymentOrderId + " has expired");
+        }
         StablecoinType token = order.getToken();
         validatePermitSupport(token);
 
