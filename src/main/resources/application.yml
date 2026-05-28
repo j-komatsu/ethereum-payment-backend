@@ -43,6 +43,9 @@ auth:
     chain-id: ${SIWE_CHAIN_ID:137}
     nonce-ttl-seconds: ${SIWE_NONCE_TTL_SECONDS:300}
 
+permit:
+  spender-private-key: ${PERMIT_SPENDER_PRIVATE_KEY:}
+
 management:
   endpoints:
     web:
