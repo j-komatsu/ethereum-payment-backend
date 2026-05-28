@@ -365,6 +365,10 @@ public class PermitService {
         }
     }
 
+    /**
+     * Used by buildTypedData() only — provides early PENDING rejection for UX feedback.
+     * Do NOT call from execute(): the CAS (updateStatusConditionally) is the atomic guard there.
+     */
     private PaymentOrder getValidatedOrder(String paymentOrderId) {
         PaymentOrder order = orderRepository.findById(paymentOrderId)
                 .orElseThrow(() -> new PaymentOrderNotFoundException(paymentOrderId));
