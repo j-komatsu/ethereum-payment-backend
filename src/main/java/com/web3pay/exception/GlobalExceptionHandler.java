@@ -2,6 +2,7 @@ package com.web3pay.exception;
 
 import com.web3pay.auth.SiweException;
 import com.web3pay.chain.ChainCommunicationException;
+import com.web3pay.chain.permit.PermitException;
 import com.web3pay.payment.PaymentOrderNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,12 @@ public class GlobalExceptionHandler {
     ProblemDetail handleSiwe(SiweException ex) {
         log.warn("SIWE authentication failed: {}", ex.getMessage());
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
+    }
+
+    @ExceptionHandler(PermitException.class)
+    ProblemDetail handlePermit(PermitException ex) {
+        log.warn("Permit execution failed: {}", ex.getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(PaymentOrderNotFoundException.class)
