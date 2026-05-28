@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PermitException.class)
     ProblemDetail handlePermit(PermitException ex) {
         log.warn("Permit execution failed: {}", ex.getMessage());
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Permit の実行に失敗しました");
     }
 
     @ExceptionHandler(PaymentOrderNotFoundException.class)

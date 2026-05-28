@@ -11,7 +11,6 @@ import com.web3pay.util.TokenAmountConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
@@ -91,8 +90,10 @@ public class PermitService {
             throw new PermitException("Spender wallet not configured");
         }
 
-        PaymentOrder order = getActiveOrder(paymentOrderId);
+        PaymentOrder order = getValidatedOrder(paymentOrderId);
         StablecoinType token = order.getToken();
+        validatePermitSupport(token);
+
         Web3j web3j = chainRegistry.resolve(token.getChainId());
 
         BigInteger nonce = fetchNonce(web3j, token.getContractAddress(), ownerAddress);
@@ -119,23 +120,34 @@ public class PermitService {
 
     /**
      * Executes permit() then transferFrom() on-chain, then confirms the PaymentOrder.
+     * No @Transactional — DB operations are short-lived individual transactions; RPC I/O runs outside
+     * any DB transaction to avoid holding connections for up to 240 seconds.
      */
-    @Transactional
     public PermitTxResponse execute(String paymentOrderId, String ownerAddress,
-                                    long deadline, String hexSignature) {
+                                    long deadline, String clientNonceStr, String hexSignature) {
         validateAddress(ownerAddress);
         if (spenderCredentials == null) {
             throw new PermitException("Spender wallet not configured");
         }
+        if (deadline <= Instant.now().getEpochSecond()) {
+            throw new PermitException("Deadline has already passed");
+        }
 
-        PaymentOrder order = getActiveOrder(paymentOrderId);
+        PaymentOrder order = getValidatedOrder(paymentOrderId);
         StablecoinType token = order.getToken();
+        validatePermitSupport(token);
+
         Web3j web3j = chainRegistry.resolve(token.getChainId());
-
         BigInteger value = TokenAmountConverter.toRaw(order.getExpectedAmount(), token.getDecimals());
-        BigInteger currentNonce = fetchNonce(web3j, token.getContractAddress(), ownerAddress);
 
-        // Parse signature components
+        // Validate nonce: client must send the nonce used for signing, must match current on-chain nonce
+        BigInteger clientNonce = parseNonce(clientNonceStr);
+        BigInteger currentNonce = fetchNonce(web3j, token.getContractAddress(), ownerAddress);
+        if (!clientNonce.equals(currentNonce)) {
+            throw new PermitException("Nonce mismatch — please re-fetch typed data and re-sign");
+        }
+
+        // Parse and validate signature
         byte[] sigBytes = Numeric.hexStringToByteArray(hexSignature);
         if (sigBytes.length != 65) {
             throw new PermitException("Signature must be 65 bytes");
@@ -152,7 +164,14 @@ public class PermitService {
         verifyPermitSignature(token, ownerAddress, spenderAddress, value,
                 currentNonce, BigInteger.valueOf(deadline), (byte) vInt, r, s);
 
-        // Submit permit() transaction
+        // Atomically claim order: PENDING → PROCESSING (prevents double-execution)
+        int claimed = orderRepository.updateStatusConditionally(
+                paymentOrderId, PaymentStatus.PENDING, PaymentStatus.PROCESSING);
+        if (claimed == 0) {
+            throw new PermitException("Order is not available for permit execution");
+        }
+
+        // Submit permit() transaction (outside DB transaction — may take up to 120s)
         String permitTxHash = sendPermit(web3j, token, ownerAddress, value,
                 BigInteger.valueOf(deadline), (byte) vInt, r, s);
         log.info("Permit TX submitted: {}", permitTxHash);
@@ -173,6 +192,7 @@ public class PermitService {
             throw new PermitException("Unexpected transferFrom txHash format");
         }
 
+        // Confirm order (own short DB transaction via save())
         order.setStatus(PaymentStatus.CONFIRMED);
         order.setTxHash(transferTxHash);
         order.setSenderAddress(ownerAddress.toLowerCase());
@@ -296,11 +316,23 @@ public class PermitService {
 
     private String sendTransaction(Web3j web3j, StablecoinType token, String data, BigInteger gasLimit) {
         try {
-            BigInteger gasPrice = web3j.ethGasPrice().send().getGasPrice();
             RawTransactionManager txManager = new RawTransactionManager(
                     web3j, spenderCredentials, token.getChainId());
-            EthSendTransaction sent = txManager.sendTransaction(
-                    gasPrice, gasLimit, token.getContractAddress(), data, BigInteger.ZERO);
+
+            // Use EIP-1559 (supported by both Ethereum Mainnet and Polygon since their respective upgrades)
+            BigInteger maxPriorityFeePerGas = web3j.ethMaxPriorityFeePerGas().send().getMaxPriorityFeePerGas();
+            BigInteger baseFee = web3j.ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false)
+                    .send().getBlock().getBaseFeePerGas();
+            BigInteger maxFeePerGas = baseFee.multiply(BigInteger.TWO).add(maxPriorityFeePerGas);
+
+            EthSendTransaction sent = txManager.sendEIP1559Transaction(
+                    (long) token.getChainId(),
+                    maxPriorityFeePerGas,
+                    maxFeePerGas,
+                    gasLimit,
+                    token.getContractAddress(),
+                    data,
+                    BigInteger.ZERO);
             if (sent.hasError()) {
                 throw new ChainCommunicationException("TX error: " + sent.getError().getMessage());
             }
@@ -328,16 +360,30 @@ public class PermitService {
         }
     }
 
-    private PaymentOrder getActiveOrder(String paymentOrderId) {
+    private PaymentOrder getValidatedOrder(String paymentOrderId) {
         PaymentOrder order = orderRepository.findById(paymentOrderId)
                 .orElseThrow(() -> new PaymentOrderNotFoundException(paymentOrderId));
         if (order.getStatus() != PaymentStatus.PENDING) {
-            throw new PermitException("Order " + paymentOrderId + " is not PENDING (status=" + order.getStatus() + ")");
+            throw new PermitException("Order " + paymentOrderId + " is not PENDING");
         }
         if (order.getExpiresAt() != null && order.getExpiresAt().isBefore(Instant.now())) {
             throw new PermitException("Order " + paymentOrderId + " has expired");
         }
         return order;
+    }
+
+    private void validatePermitSupport(StablecoinType token) {
+        if (!token.isPermitSupported()) {
+            throw new PermitException(token.name() + " does not support EIP-2612 permit");
+        }
+    }
+
+    private BigInteger parseNonce(String nonceStr) {
+        try {
+            return new BigInteger(nonceStr);
+        } catch (NumberFormatException e) {
+            throw new PermitException("Invalid nonce format: " + nonceStr);
+        }
     }
 
     private void validateAddress(String address) {

@@ -36,6 +36,7 @@ public class PermitController {
             Authentication authentication) {
         String ownerAddress = (String) authentication.getPrincipal();
         return ResponseEntity.ok(permitService.execute(
-                request.paymentOrderId(), ownerAddress, request.deadline(), request.signature()));
+                request.paymentOrderId(), ownerAddress, request.deadline(),
+                request.nonce(), request.signature()));
     }
 }

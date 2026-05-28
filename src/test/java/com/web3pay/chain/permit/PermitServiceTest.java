@@ -115,7 +115,7 @@ class PermitServiceTest {
         PermitService noSpender = new PermitService(chainRegistry, orderRepository, "");
         long deadline = Instant.now().plusSeconds(1800).getEpochSecond();
         assertThatThrownBy(() -> noSpender.execute("order1", "0x" + "1".repeat(40),
-                                                    deadline, "0x" + "0".repeat(130)))
+                                                    deadline, "0", "0x" + "0".repeat(130)))
                 .isInstanceOf(PermitException.class)
                 .hasMessageContaining("Spender wallet not configured");
     }
@@ -124,8 +124,17 @@ class PermitServiceTest {
     void execute_invalidOwnerAddress_throwsPermitException() {
         long deadline = Instant.now().plusSeconds(1800).getEpochSecond();
         assertThatThrownBy(() -> permitService.execute("order1", "notAnAddress",
-                                                       deadline, "0x" + "0".repeat(130)))
+                                                       deadline, "0", "0x" + "0".repeat(130)))
                 .isInstanceOf(PermitException.class)
                 .hasMessageContaining("Invalid Ethereum address");
+    }
+
+    @Test
+    void execute_pastDeadline_throwsPermitException() {
+        long pastDeadline = Instant.now().minusSeconds(60).getEpochSecond();
+        assertThatThrownBy(() -> permitService.execute("order1", "0x" + "1".repeat(40),
+                                                       pastDeadline, "0", "0x" + "0".repeat(130)))
+                .isInstanceOf(PermitException.class)
+                .hasMessageContaining("Deadline has already passed");
     }
 }
