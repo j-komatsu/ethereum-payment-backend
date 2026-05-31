@@ -37,6 +37,9 @@
 docs/
 ├── PLAN.md              ← 開発計画（何をするか）
 ├── report-*.md          ← 技術レポート（Ethereumの仕組みなど）
+│   ├── report-11-why-ethereum.md      ← なぜEthereumか：全チェーン徹底比較
+│   ├── report-12-why-blockchain.md    ← なぜブロックチェーンが必要か・Web3とは
+│   └── report-13-stablecoin-future.md ← ステーブルコインの将来性・規制・CBDC
 └── knowledge/
     ├── README.md        ← このファイル
     ├── _template.md     ← テンプレート
