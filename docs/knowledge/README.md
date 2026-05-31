@@ -39,7 +39,9 @@ docs/
 ├── report-*.md          ← 技術レポート（Ethereumの仕組みなど）
 │   ├── report-11-why-ethereum.md      ← なぜEthereumか：全チェーン徹底比較
 │   ├── report-12-why-blockchain.md    ← なぜブロックチェーンが必要か・Web3とは
-│   └── report-13-stablecoin-future.md ← ステーブルコインの将来性・規制・CBDC
+│   ├── report-13-stablecoin-future.md ← ステーブルコインの将来性・規制・CBDC
+│   ├── report-14-crypto-regulations-timeline.md ← 仮想通貨規制の世界史（日本・米・EU・アジア）
+│   └── report-15-meme-coins.md        ← ミームコインはなぜ流行ったのか（DOGE・SHIB・PEPE）
 └── knowledge/
     ├── README.md        ← このファイル
     ├── _template.md     ← テンプレート
