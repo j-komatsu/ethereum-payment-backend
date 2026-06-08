@@ -1,0 +1,17 @@
+{
+  "name": "web3pay-hardhat",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "node": "hardhat node",
+    "setup": "hardhat run scripts/local-setup.ts --network localhost",
+    "compile": "hardhat compile"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0"
+  }
+}
