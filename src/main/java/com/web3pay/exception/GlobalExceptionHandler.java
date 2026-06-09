@@ -74,7 +74,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
-        log.debug("IllegalArgumentException: {}", ex.getMessage());
+        log.warn("IllegalArgumentException: {}", ex.getMessage());
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "リクエストの形式が不正です");
     }
 }

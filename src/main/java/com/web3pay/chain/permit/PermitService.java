@@ -179,6 +179,9 @@ public class PermitService {
         // Submit permit() transaction (outside DB transaction — may take up to 120s)
         String permitTxHash = sendPermit(web3j, token, ownerAddress, value,
                 BigInteger.valueOf(deadline), (byte) vInt, r, s);
+        if (!TX_HASH_PATTERN.matcher(permitTxHash).matches()) {
+            throw new PermitException("Unexpected permit txHash format: " + permitTxHash);
+        }
         log.info("Permit TX submitted: {}", permitTxHash);
         waitForReceipt(web3j, permitTxHash, "permit");
 
@@ -219,8 +222,8 @@ public class PermitService {
         System.arraycopy(nameHash, 0, encoded, 32, 32);
         System.arraycopy(versionHash, 0, encoded, 64, 32);
         System.arraycopy(Numeric.toBytesPadded(BigInteger.valueOf(token.getChainId()), 32), 0, encoded, 96, 32);
-        byte[] addrBytes = Numeric.hexStringToByteArray(Numeric.cleanHexPrefix(token.getContractAddress()));
-        System.arraycopy(addrBytes, 0, encoded, 128 + 12, 20);
+        BigInteger addrBigInt = new BigInteger(Numeric.cleanHexPrefix(token.getContractAddress()), 16);
+        System.arraycopy(Numeric.toBytesPadded(addrBigInt, 32), 0, encoded, 128, 32);
         return Hash.sha3(encoded);
     }
 

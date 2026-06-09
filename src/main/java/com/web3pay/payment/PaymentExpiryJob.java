@@ -19,8 +19,8 @@ public class PaymentExpiryJob {
     @Scheduled(fixedDelayString = "${payment.expiry-check-interval-ms:60000}")
     @Transactional
     public void expireOrders() {
-        List<PaymentOrder> expired = repository.findByStatusAndExpiresAtBefore(
-                PaymentStatus.PENDING, Instant.now());
+        List<PaymentOrder> expired = repository.findByStatusInAndExpiresAtBefore(
+                List.of(PaymentStatus.PENDING, PaymentStatus.AWAITING_CONSUMER), Instant.now());
 
         if (expired.isEmpty()) {
             return;

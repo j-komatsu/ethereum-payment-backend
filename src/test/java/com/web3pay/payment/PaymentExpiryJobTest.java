@@ -28,10 +28,11 @@ class PaymentExpiryJobTest {
 
     @Test
     void expireOrders_withExpiredPendingOrders_updatesStatusToExpired() {
-        PaymentOrder order1 = pendingOrder("order-1", Instant.now().minusSeconds(10));
-        PaymentOrder order2 = pendingOrder("order-2", Instant.now().minusSeconds(60));
+        PaymentOrder order1 = orderWithStatus("order-1", PaymentStatus.PENDING, Instant.now().minusSeconds(10));
+        PaymentOrder order2 = orderWithStatus("order-2", PaymentStatus.PENDING, Instant.now().minusSeconds(60));
 
-        when(repository.findByStatusAndExpiresAtBefore(eq(PaymentStatus.PENDING), any(Instant.class)))
+        when(repository.findByStatusInAndExpiresAtBefore(
+                eq(List.of(PaymentStatus.PENDING, PaymentStatus.AWAITING_CONSUMER)), any(Instant.class)))
                 .thenReturn(List.of(order1, order2));
 
         expiryJob.expireOrders();
@@ -46,8 +47,22 @@ class PaymentExpiryJobTest {
     }
 
     @Test
+    void expireOrders_withExpiredAwaitingConsumerOrder_updatesStatusToExpired() {
+        PaymentOrder cpmOrder = orderWithStatus("cpm-1", PaymentStatus.AWAITING_CONSUMER, Instant.now().minusSeconds(30));
+
+        when(repository.findByStatusInAndExpiresAtBefore(
+                eq(List.of(PaymentStatus.PENDING, PaymentStatus.AWAITING_CONSUMER)), any(Instant.class)))
+                .thenReturn(List.of(cpmOrder));
+
+        expiryJob.expireOrders();
+
+        assertThat(cpmOrder.getStatus()).isEqualTo(PaymentStatus.EXPIRED);
+        verify(repository).saveAll(List.of(cpmOrder));
+    }
+
+    @Test
     void expireOrders_withNoExpiredOrders_doesNotSave() {
-        when(repository.findByStatusAndExpiresAtBefore(eq(PaymentStatus.PENDING), any(Instant.class)))
+        when(repository.findByStatusInAndExpiresAtBefore(any(), any()))
                 .thenReturn(List.of());
 
         expiryJob.expireOrders();
@@ -56,22 +71,24 @@ class PaymentExpiryJobTest {
     }
 
     @Test
-    void expireOrders_queriesOnlyPendingOrders() {
-        when(repository.findByStatusAndExpiresAtBefore(any(), any())).thenReturn(List.of());
+    void expireOrders_queriesPendingAndAwaitingConsumer() {
+        when(repository.findByStatusInAndExpiresAtBefore(any(), any())).thenReturn(List.of());
 
         expiryJob.expireOrders();
 
-        verify(repository).findByStatusAndExpiresAtBefore(eq(PaymentStatus.PENDING), any(Instant.class));
+        verify(repository).findByStatusInAndExpiresAtBefore(
+                eq(List.of(PaymentStatus.PENDING, PaymentStatus.AWAITING_CONSUMER)),
+                any(Instant.class));
     }
 
-    private PaymentOrder pendingOrder(String id, Instant expiresAt) {
+    private PaymentOrder orderWithStatus(String id, PaymentStatus status, Instant expiresAt) {
         return PaymentOrder.builder()
                 .id(id)
                 .receiverAddress("0x" + "a".repeat(40))
                 .expectedAmount(new BigDecimal("100"))
                 .token(JPYC)
                 .paymentMode(PaymentMode.MPM)
-                .status(PaymentStatus.PENDING)
+                .status(status)
                 .createdAt(Instant.now().minusSeconds(120))
                 .expiresAt(expiresAt)
                 .build();
