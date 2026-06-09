@@ -2,17 +2,16 @@ package com.web3pay.payment;
 
 import com.web3pay.token.StablecoinType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "payment_orders")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -46,6 +45,7 @@ public class PaymentOrder {
     @Column(nullable = false)
     private PaymentStatus status;
 
+    @Column(unique = true, length = 66)
     private String txHash;
 
     @Column(nullable = false)
@@ -64,5 +64,18 @@ public class PaymentOrder {
         if (status == null) {
             status = PaymentStatus.PENDING;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PaymentOrder)) return false;
+        PaymentOrder that = (PaymentOrder) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

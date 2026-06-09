@@ -1,0 +1,43 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  flyway:
+    enabled: false
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+web3j:
+  client-address: http://localhost:8545
+  polygon-endpoint: http://localhost:8545
+  ethereum-endpoint: http://localhost:8545
+
+payment:
+  default-ttl-seconds: 3600
+
+poller:
+  enabled: false
+
+auth:
+  jwt:
+    secret: dGVzdC1zZWNyZXQtZm9yLXVuaXQtdGVzdHMtb25seSE=
+    expiry-seconds: 86400
+  siwe:
+    domain: localhost
+    chain-id: 137
+    nonce-ttl-seconds: 300
+
+permit:
+  spender-private-key:
+
+logging:
+  level:
+    com.web3pay: WARN
+    org.web3j: ERROR
+    okhttp3: ERROR

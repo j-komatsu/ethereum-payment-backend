@@ -28,6 +28,23 @@ web3j:
 payment:
   default-ttl-seconds: ${PAYMENT_DEFAULT_TTL_SECONDS:3600}
   max-ttl-seconds: ${PAYMENT_MAX_TTL_SECONDS:86400}
+  expiry-check-interval-ms: ${PAYMENT_EXPIRY_CHECK_INTERVAL_MS:60000}
+
+poller:
+  enabled: ${POLLER_ENABLED:true}
+  interval-ms: ${POLLER_INTERVAL_MS:15000}
+
+auth:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiry-seconds: ${JWT_EXPIRY_SECONDS:86400}
+  siwe:
+    domain: ${SIWE_DOMAIN:localhost}
+    chain-id: ${SIWE_CHAIN_ID:137}
+    nonce-ttl-seconds: ${SIWE_NONCE_TTL_SECONDS:300}
+
+permit:
+  spender-private-key: ${PERMIT_SPENDER_PRIVATE_KEY:}
 
 management:
   endpoints:
