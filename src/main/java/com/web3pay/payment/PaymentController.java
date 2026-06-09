@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Payments", description = "支払いオーダー管理 API")
@@ -38,5 +39,19 @@ public class PaymentController {
             @RequestParam(required = false) String status,
             @PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(paymentService.listOrders(status, pageable));
+    }
+
+    @Operation(
+            summary = "CPM 消費者アドレス確定",
+            description = "CPM モードの注文に対し、消費者がQRスキャン後に自分のウォレットアドレスを確定します。" +
+                    "consumerNonce が一致した場合、AWAITING_CONSUMER → PENDING に遷移します。")
+    @PostMapping("/{id}/claim")
+    public ResponseEntity<PaymentOrder> claimPaymentOrder(
+            @PathVariable String id,
+            @Valid @RequestBody ClaimPaymentRequest request,
+            Authentication authentication) {
+        String consumerAddress = (String) authentication.getPrincipal();
+        PaymentOrder order = paymentService.claimOrder(id, consumerAddress, request.consumerNonce());
+        return ResponseEntity.ok(order);
     }
 }

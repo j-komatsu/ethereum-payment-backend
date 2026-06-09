@@ -86,6 +86,32 @@ public class PaymentService {
     }
 
     /**
+     * Called when a CPM consumer scans the QR code and confirms their address.
+     * Transitions the order from AWAITING_CONSUMER → PENDING.
+     * The consumerNonce embedded in the QR code acts as a one-time claim token.
+     */
+    @Transactional
+    public PaymentOrder claimOrder(String orderId, String consumerAddress, String consumerNonce) {
+        PaymentOrder order = getOrder(orderId);
+
+        if (order.getPaymentMode() != PaymentMode.CPM) {
+            throw new IllegalArgumentException("このオーダーは CPM モードではありません");
+        }
+        if (order.getStatus() != PaymentStatus.AWAITING_CONSUMER) {
+            throw new IllegalArgumentException("このオーダーはすでに確定済みです: " + order.getStatus());
+        }
+        if (!consumerNonce.equals(order.getConsumerNonce())) {
+            throw new IllegalArgumentException("consumerNonce が一致しません");
+        }
+
+        order.setSenderAddress(consumerAddress);
+        order.setStatus(PaymentStatus.PENDING);
+        PaymentOrder saved = repository.save(order);
+        log.info("CPM order claimed id={} consumer={}", orderId, consumerAddress);
+        return saved;
+    }
+
+    /**
      * Called by TransferEventPoller when a Transfer event is detected on-chain.
      * Matches the incoming transfer to a PENDING PaymentOrder and updates its status.
      * Idempotent: if txHash already processed, silently skips.

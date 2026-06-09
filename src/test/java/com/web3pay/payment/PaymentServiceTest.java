@@ -150,4 +150,66 @@ class PaymentServiceTest {
 
         verify(repository).save(any(PaymentOrder.class));
     }
+
+    // ------------------------------------------------------------------ claimOrder tests
+
+    private static final String CONSUMER = "0x" + "c".repeat(40);
+    private static final String NONCE = "a".repeat(64);
+
+    private PaymentOrder awaitingConsumerOrder() {
+        return PaymentOrder.builder()
+                .id("cpm-order-1")
+                .receiverAddress(RECEIVER)
+                .token(TOKEN)
+                .expectedAmount(new BigDecimal("500"))
+                .paymentMode(PaymentMode.CPM)
+                .consumerNonce(NONCE)
+                .status(PaymentStatus.AWAITING_CONSUMER)
+                .createdAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(3600))
+                .build();
+    }
+
+    @Test
+    void claimOrder_validNonce_setsPendingAndSenderAddress() {
+        PaymentOrder order = awaitingConsumerOrder();
+        when(repository.findById("cpm-order-1")).thenReturn(Optional.of(order));
+        when(repository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        PaymentOrder result = paymentService.claimOrder("cpm-order-1", CONSUMER, NONCE);
+
+        assertThat(result.getStatus()).isEqualTo(PaymentStatus.PENDING);
+        assertThat(result.getSenderAddress()).isEqualTo(CONSUMER);
+    }
+
+    @Test
+    void claimOrder_wrongNonce_throwsIllegalArgument() {
+        PaymentOrder order = awaitingConsumerOrder();
+        when(repository.findById("cpm-order-1")).thenReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> paymentService.claimOrder("cpm-order-1", CONSUMER, "b".repeat(64)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("consumerNonce");
+    }
+
+    @Test
+    void claimOrder_notCpmMode_throwsIllegalArgument() {
+        PaymentOrder mpmOrder = pendingOrder(new BigDecimal("100"));
+        when(repository.findById("order-1")).thenReturn(Optional.of(mpmOrder));
+
+        assertThatThrownBy(() -> paymentService.claimOrder("order-1", CONSUMER, NONCE))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("CPM");
+    }
+
+    @Test
+    void claimOrder_alreadyClaimed_throwsIllegalArgument() {
+        PaymentOrder order = awaitingConsumerOrder();
+        order.setStatus(PaymentStatus.PENDING);
+        when(repository.findById("cpm-order-1")).thenReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> paymentService.claimOrder("cpm-order-1", CONSUMER, NONCE))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("確定済み");
+    }
 }
