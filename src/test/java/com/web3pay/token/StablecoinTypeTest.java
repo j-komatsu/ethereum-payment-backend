@@ -64,17 +64,17 @@ class StablecoinTypeTest {
     }
 
     @Test
-    void jpyc_isOnPolygon() {
-        assertThat(StablecoinType.JPYC.getChainId()).isEqualTo(137);
+    void jpycAndUsdcAndUsdt_areOnPolygon() {
+        for (StablecoinType token : List.of(StablecoinType.JPYC, StablecoinType.USDC, StablecoinType.USDT)) {
+            assertThat(token.getChainId())
+                    .as("chainId of %s", token)
+                    .isEqualTo(137);
+        }
     }
 
     @Test
-    void usdcUsdtDai_areOnEthereumMainnet() {
-        for (StablecoinType token : List.of(StablecoinType.USDC, StablecoinType.USDT, StablecoinType.DAI)) {
-            assertThat(token.getChainId())
-                    .as("chainId of %s", token)
-                    .isEqualTo(1);
-        }
+    void dai_isOnEthereumMainnet() {
+        assertThat(StablecoinType.DAI.getChainId()).isEqualTo(1);
     }
 
     @Test

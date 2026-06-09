@@ -7,10 +7,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum StablecoinType {
     // TODO: Verify contract address and permitName against on-chain name() before production use
-    JPYC("0x431D5dfF03120AFA4bDf332c61A6e1766eF37BF6", 18, 137, "JPY Coin", "1", true),
-    USDC("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", 6,   1,   "USD Coin", "2", true),
-    USDT("0xdAC17F958D2ee523a2206206994597C13D831ec7", 6,   1,   "Tether USD", "1", false), // not EIP-2612
-    DAI( "0x6B175474E89094C44Da98b954EedeAC495271d0F", 18,  1,   "Dai Stablecoin", "1", true);
+    JPYC("0x431D5dfF03120AFA4bDf332c61A6e1766eF37BF6", 18, 137, "JPY Coin",       "1", true),
+    // Polygon native USDC (Circle 公式発行, chainId=137)
+    USDC("0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", 6,  137, "USD Coin",       "2", true),
+    // Polygon USDT (Tether 公式, chainId=137) — EIP-2612 非対応
+    USDT("0xc2132D05D31c914a87C6611C10748AEb04B58e8F", 6,  137, "Tether USD",     "1", false),
+    // DAI は学習用に Ethereum Mainnet (chainId=1) を維持
+    DAI( "0x6B175474E89094C44Da98b954EedeAC495271d0F", 18,  1,  "Dai Stablecoin", "1", true);
 
     private final String contractAddress;
     private final int decimals;
