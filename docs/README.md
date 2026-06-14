@@ -59,6 +59,7 @@
 | [phase5-siwe-auth.md](implementation-notes/phase5-siwe-auth.md) | SIWE 認証・JWT 発行・Spring Security |
 | [phase5-permit-payment.md](implementation-notes/phase5-permit-payment.md) | EIP-2612 Permit + transferFrom 決済 |
 | [phase5-6-smartcontract-planning.md](implementation-notes/phase5-6-smartcontract-planning.md) | Phase 5・6 スマコン計画更新 |
+| [phase6-streaming-autopurchase-openapi.md](implementation-notes/phase6-streaming-autopurchase-openapi.md) | Phase 6 Sablier・AutoPurchaseJob・OpenAPI |
 | [_template.md](implementation-notes/_template.md) | 新規ノート作成用テンプレート |
 
 ---
@@ -120,7 +121,8 @@ docs/
 │   ├── phase4-transfer-event-poller.md
 │   ├── phase5-6-smartcontract-planning.md
 │   ├── phase5-permit-payment.md
-│   └── phase5-siwe-auth.md
+│   ├── phase5-siwe-auth.md
+│   └── phase6-streaming-autopurchase-openapi.md
 └── knowledge/
     ├── README.md
     ├── _template.md
