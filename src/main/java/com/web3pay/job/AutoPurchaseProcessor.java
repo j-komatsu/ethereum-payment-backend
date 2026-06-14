@@ -5,6 +5,7 @@ import com.web3pay.token.StablecoinType;
 import com.web3pay.util.TokenAmountConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +37,9 @@ public class AutoPurchaseProcessor {
     private final AutoPurchaseExecutionRepository executionRepository;
     private final ChainRegistry chainRegistry;
 
+    @Value("${permit.spender-address:}")
+    private String spenderAddress;
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void process(AutoPurchaseSubscription sub) {
         StablecoinType token = sub.getToken();
@@ -66,8 +70,10 @@ public class AutoPurchaseProcessor {
     }
 
     private BigDecimal fetchAllowance(String walletAddress, StablecoinType token) throws IOException {
+        if (spenderAddress == null || spenderAddress.isBlank()) {
+            throw new IllegalStateException("permit.spender-address が未設定のため allowance チェックができません");
+        }
         Web3j web3j = chainRegistry.resolve(token.getChainId());
-        String spenderAddress = "0x0000000000000000000000000000000000000000"; // TODO: permit.spender-address から取得
 
         Function function = new Function(
                 "allowance",

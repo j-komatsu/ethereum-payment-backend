@@ -45,6 +45,7 @@ auth:
 
 permit:
   spender-private-key: ${PERMIT_SPENDER_PRIVATE_KEY:}
+  spender-address: ${PERMIT_SPENDER_ADDRESS:}
 
 management:
   endpoints:

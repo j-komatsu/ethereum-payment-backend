@@ -42,8 +42,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StreamingPaymentService {
 
-    // Sablier Flow コントラクト（Polygon Mainnet）— 環境変数で上書き可能
-    private static final String SABLIER_FLOW_POLYGON = "0x1a272b596b10f8a0Cbb3eb04Eb787Af40B2c0F1";
+    // Sablier Flow コントラクト（Polygon Mainnet）— 必ず公式ドキュメントで確認してから使用すること
+    // 公式アドレス: https://docs.sablier.com/guides/flow/deployments（Polygon chainId=137）
+    // IMPORTANT: 本番前に sablier.contract-address 環境変数で正確なアドレスを上書きすること
+    private static final String SABLIER_FLOW_POLYGON_PLACEHOLDER = "0x0000000000000000000000000000000000000000";
 
     private final SablierStreamRepository streamRepository;
     private final ChainRegistry chainRegistry;
@@ -177,11 +179,18 @@ public class StreamingPaymentService {
     }
 
     private void cancelOnChain(Long streamId) {
-        // Sablier Flow の cancel(streamId) を呼ぶ
+        // Sablier Flow の void(uint256 streamId) を呼ぶ
+        // NOTE: 関数名は "cancel" ではなく "void" (Solidity の予約語と異なる)
+        // ABI: function void(uint256 streamId) external
         throw new UnsupportedOperationException("On-chain Sablier integration is not yet wired (requires private key config)");
     }
 
     private String resolveContractAddress() {
-        return sablierContractAddress != null ? sablierContractAddress : SABLIER_FLOW_POLYGON;
+        if (sablierContractAddress == null || sablierContractAddress.isBlank()) {
+            throw new IllegalStateException(
+                    "sablier.contract-address が未設定です。docs.sablier.com/guides/flow/deployments から " +
+                    "Polygon Mainnet の正確なアドレスを確認して環境変数に設定してください。");
+        }
+        return sablierContractAddress;
     }
 }
