@@ -4,6 +4,7 @@ import com.web3pay.auth.SiweException;
 import com.web3pay.chain.ChainCommunicationException;
 import com.web3pay.chain.permit.PermitException;
 import com.web3pay.payment.PaymentOrderNotFoundException;
+import com.web3pay.streaming.StreamNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PaymentOrderNotFoundException.class)
     ProblemDetail handleNotFound(PaymentOrderNotFoundException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(StreamNotFoundException.class)
+    ProblemDetail handleStreamNotFound(StreamNotFoundException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
