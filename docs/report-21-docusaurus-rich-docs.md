@@ -140,11 +140,11 @@ import TabItem from '@theme/TabItem';
   <TabItem value="permit" label="EIP-2612 Permit">
 
   ```java
-  // PermitService.java
-  void executePermit(String owner, String paymentOrderId, ...) {
-      verifyPermitSignature(digest, owner, sigBytes);
+  // 概念コード（実際の実装は PermitService#execute() を参照）
+  PermitTxResponse execute(String paymentOrderId, String ownerAddress, ...) {
+      verifyPermitSignature(token, ownerAddress, ...);
       sendPermit(web3j, token, ownerAddress, ...);
-      sendTransferFrom(web3j, token, ownerAddress, ...);
+      sendTransferFrom(web3j, token, ownerAddress, receiverAddress, value);
   }
   ```
 

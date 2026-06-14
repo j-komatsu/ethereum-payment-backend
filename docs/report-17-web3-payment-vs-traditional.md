@@ -72,7 +72,7 @@ sequenceDiagram
     SC->>Chain: トランザクション記録
     Chain-->>BE: TX ハッシュ
     BE-->>FE: 決済完了 ✅
-    Note over Chain: 2秒でファイナリティ
+    Note over Chain: 2秒でブロック確認（チェックポイント確定は~2分後）
 ```
 
 **特徴:**

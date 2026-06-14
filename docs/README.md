@@ -104,6 +104,12 @@ docs/
 ├── report-13-stablecoin-future.md
 ├── report-14-crypto-regulations-timeline.md
 ├── report-15-meme-coins.md
+├── report-16-layer2-complete-guide.md
+├── report-17-web3-payment-vs-traditional.md
+├── report-18-account-abstraction.md
+├── report-19-smart-contract-security.md
+├── report-20-ethereum-roadmap.md
+├── report-21-docusaurus-rich-docs.md
 ├── implementation-notes/
 │   ├── _template.md
 │   ├── phase0-initial-setup.md

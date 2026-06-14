@@ -64,7 +64,7 @@ function withdraw(uint amount) external {
 
 **または OpenZeppelin の ReentrancyGuard を使う:**
 ```solidity
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol"; // OpenZeppelin v5 以降のパス（v4 以前は security/）
 
 contract SafeVault is ReentrancyGuard {
     function withdraw(uint amount) external nonReentrant { ... }

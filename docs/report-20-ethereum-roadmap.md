@@ -117,7 +117,7 @@ After EIP-4844:
 graph TB
     L2_TX["L2 トランザクション\n（Optimism/Arbitrum）"]
     L2_TX -->|バッチ化| BATCH["blob データ\n（圧縮・一時保存）"]
-    BATCH -->|EIP-4844| L1["Ethereum L1\n4096 bytes × 6 blobs まで"]
+    BATCH -->|EIP-4844| L1["Ethereum L1\n128KB × 6 blobs まで"]
     L1 -->|18日後| DELETE["自動削除\n（最終性は確定済み）"]
 
     style DELETE fill:#ffebee,stroke:#f44336
