@@ -125,7 +125,7 @@ class StreamingPaymentServiceTest {
     }
 
     @Test
-    void getWithdrawableAmount_mockMode_returnsRateTimesElapsed() throws Exception {
+    void getWithdrawableAmount_mockMode_returnsRateTimesElapsed() {
         String ownerAddress = "0xabc1230000000000000000000000000000000001";
         SablierStream stream = buildStream(42L, ownerAddress, StreamStatus.ACTIVE);
         stream.setRatePerSecond(new BigDecimal("1.0")); // 1 JPYC per second

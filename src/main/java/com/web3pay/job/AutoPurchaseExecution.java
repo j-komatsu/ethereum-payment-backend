@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "auto_purchase_executions")
@@ -44,5 +45,18 @@ public class AutoPurchaseExecution {
     @PrePersist
     void prePersist() {
         executedAt = Instant.now();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AutoPurchaseExecution)) return false;
+        AutoPurchaseExecution that = (AutoPurchaseExecution) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

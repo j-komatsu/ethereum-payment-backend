@@ -1,5 +1,6 @@
 package com.web3pay.streaming;
 
+import com.web3pay.chain.ChainCommunicationException;
 import com.web3pay.chain.ChainRegistry;
 import com.web3pay.token.StablecoinType;
 import com.web3pay.util.TokenAmountConverter;
@@ -113,40 +114,45 @@ public class StreamingPaymentService {
     }
 
     /**
-     * Sablier コントラクトに withdrawable_amount(streamId) を call し、引き出し可能残高を返す。
+     * Sablier コントラクトに withdrawableAmountOf(streamId) を call し、引き出し可能残高を返す。
+     * IOException は ChainCommunicationException でラップして伝播させる。
      */
-    public BigDecimal getWithdrawableAmount(Long streamId) throws IOException {
+    public BigDecimal getWithdrawableAmount(Long streamId) {
         SablierStream stream = streamRepository.findByStreamId(streamId)
                 .orElseThrow(() -> new StreamNotFoundException(streamId));
 
         if (!sablierEnabled) {
-            // モード: ratePerSecond × ストリーム経過秒数（概算）
             long elapsedSeconds = Instant.now().getEpochSecond() - stream.getCreatedAt().getEpochSecond();
             return stream.getRatePerSecond().multiply(BigDecimal.valueOf(Math.max(0, elapsedSeconds)));
         }
 
-        Web3j web3j = chainRegistry.resolve(stream.getToken().getChainId());
-        String contractAddress = resolveContractAddress();
+        try {
+            Web3j web3j = chainRegistry.resolve(stream.getToken().getChainId());
+            String contractAddress = resolveContractAddress();
 
-        Function function = new Function(
-                "withdrawableAmountOf",
-                List.of(new Uint256(BigInteger.valueOf(streamId))),
-                List.of(new TypeReference<Uint128>() {})
-        );
+            Function function = new Function(
+                    "withdrawableAmountOf",
+                    List.of(new Uint256(BigInteger.valueOf(streamId))),
+                    List.of(new TypeReference<Uint128>() {})
+            );
 
-        String encodedFunction = FunctionEncoder.encode(function);
-        String response = web3j.ethCall(
-                Transaction.createEthCallTransaction(null, contractAddress, encodedFunction),
-                DefaultBlockParameterName.LATEST
-        ).send().getValue();
+            String encodedFunction = FunctionEncoder.encode(function);
+            String response = web3j.ethCall(
+                    Transaction.createEthCallTransaction(null, contractAddress, encodedFunction),
+                    DefaultBlockParameterName.LATEST
+            ).send().getValue();
 
-        List<Type> decoded = FunctionReturnDecoder.decode(response, function.getOutputParameters());
-        if (decoded.isEmpty()) {
-            return BigDecimal.ZERO;
+            List<Type> decoded = FunctionReturnDecoder.decode(response, function.getOutputParameters());
+            if (decoded.isEmpty()) {
+                return BigDecimal.ZERO;
+            }
+
+            BigInteger rawAmount = ((Uint128) decoded.get(0)).getValue();
+            return TokenAmountConverter.toHuman(rawAmount, stream.getToken().getDecimals());
+
+        } catch (IOException e) {
+            throw new ChainCommunicationException("withdrawableAmountOf call failed for streamId=" + streamId, e);
         }
-
-        BigInteger rawAmount = ((Uint128) decoded.get(0)).getValue();
-        return TokenAmountConverter.toHuman(rawAmount, stream.getToken().getDecimals());
     }
 
     public List<StreamResponse> listStreams(String walletAddress) {
