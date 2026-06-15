@@ -5,6 +5,21 @@
 
 ---
 
+## 🗺️ 学習ガイド（guides）
+
+ブロックチェーン・RPC・バリデーターを段階的に学べるガイドです。  
+**初めての方はここから →** [guides/README.md](guides/README.md)
+
+| レベル | フォルダ | 内容 |
+|---|---|---|
+| 🌱 初心者 | [guides/beginner/](guides/beginner/) | 例え話でブロックチェーン・RPC・バリデーターを理解 |
+| 🌿 中級者 | [guides/intermediate/](guides/intermediate/) | JSON-RPC詳細・プロバイダー比較・PoS技術詳細 |
+| 🔧 技術者 | [guides/advanced/](guides/advanced/) | 技術レポート群へのナビゲーション |
+| 🏠 個人開発者 | [guides/use-cases/personal-dev.md](guides/use-cases/personal-dev.md) | Alchemy無料枠・テストネット・コスト0円開発 |
+| 🏢 法人 | [guides/use-cases/enterprise.md](guides/use-cases/enterprise.md) | SLA・セキュリティ・コスト試算・意思決定フロー |
+
+---
+
 ## 開発計画
 
 | ファイル | 内容 |
@@ -88,6 +103,21 @@
 docs/
 ├── README.md                          ← このファイル（インデックス）
 ├── PLAN.md                            ← 開発ロードマップ
+├── guides/                            ← 学習ガイド（レベル別）
+│   ├── README.md                      ← ナビゲーション（どこから読むか）
+│   ├── beginner/                      ← 🌱 初心者向け（例え話中心）
+│   │   ├── 01-blockchain-world.md
+│   │   ├── 02-rpc-and-alchemy.md
+│   │   └── 03-validators.md
+│   ├── intermediate/                  ← 🌿 中級者向け（技術詳細）
+│   │   ├── 01-json-rpc-mechanics.md
+│   │   ├── 02-rpc-provider-comparison.md
+│   │   └── 03-pos-and-finality.md
+│   ├── advanced/                      ← 🔧 技術者向け（実装レベル）
+│   │   └── README.md
+│   └── use-cases/                     ← 🏠🏢 用途別ガイド
+│       ├── personal-dev.md
+│       └── enterprise.md
 ├── report-01-ethereum-basics.md
 ├── report-02-accounts-and-web3j.md
 ├── report-03-erc20-stablecoins.md
