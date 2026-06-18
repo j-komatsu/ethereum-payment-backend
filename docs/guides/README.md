@@ -17,6 +17,7 @@
 | ① | [beginner/01-blockchain-world.md](beginner/01-blockchain-world.md) | ブロックチェーン・Ethereum・ウォレットを例え話で理解 | 約10分 |
 | ② | [beginner/02-rpc-and-alchemy.md](beginner/02-rpc-and-alchemy.md) | RPCサーバーとAlchemyが何か分かる | 約10分 |
 | ③ | [beginner/03-validators.md](beginner/03-validators.md) | バリデーターの役割が分かる | 約8分 |
+| 📋 | [beginner/faq-blockchain-basics.md](beginner/faq-blockchain-basics.md) | **全体像Q&A（総まとめ）** | 約15分 |
 
 初心者ガイドを読み終えたら → [なぜブロックチェーンが必要か](../report-12-why-blockchain.md) へ、または中級者ガイドへ進む
 
